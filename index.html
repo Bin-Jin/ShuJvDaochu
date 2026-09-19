@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>光合仪数据提取</title>
+  <title>光合仪/氮平衡仪 数据提取 - 双模版</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <!-- 引入现代英文字体提升数据图表质感 -->
@@ -53,11 +53,11 @@
           <span class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 text-white shrink-0">
             <i class="fa-solid fa-microscope text-[14px] sm:text-[18px]"></i>
           </span>
-          <span class="bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">光合仪</span> 
+          <span class="bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">光合仪/氮平衡仪</span> 
           <span class="text-slate-800">数据提取</span>
-          <span class="text-[10px] sm:text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full font-semibold border border-indigo-100">Pro V2</span>
+          <span class="text-[10px] sm:text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full font-semibold border border-indigo-100">双模版</span>
         </h1>
-        <p class="text-xs sm:text-sm text-slate-500 mt-2 font-medium sm:ml-1 leading-relaxed">高精视觉大模型驱动，科研图表数据全自动解析与对齐系统</p>
+        <p class="text-xs sm:text-sm text-slate-500 mt-2 font-medium sm:ml-1 leading-relaxed">支持光合仪与氮平衡仪一键切换，科研数据全自动解析对齐</p>
       </div>
       <div class="flex items-center gap-3 shrink-0">
         <button id="clearAllBtn" class="w-full sm:w-auto px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
@@ -73,34 +73,43 @@
           <i class="fa-solid fa-sliders text-indigo-500"></i> AI 引擎与提取配置
         </h2>
         <div class="flex flex-wrap gap-1.5 sm:gap-2 p-1 bg-slate-50 rounded-xl border border-slate-200 overflow-x-auto whitespace-nowrap scrollbar-hide">
-          <button type="button" onclick="setPreset('gemini')" class="px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs bg-white text-slate-700 hover:text-indigo-600 shadow-sm rounded-lg transition-all font-semibold">Gemini</button>
-          <button type="button" onclick="setPreset('zhipu')" class="px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs bg-white text-slate-700 hover:text-indigo-600 shadow-sm rounded-lg transition-all font-semibold">GLM-4V</button>
-          <button type="button" onclick="setPreset('qwen-max')" class="px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs bg-white text-slate-700 hover:text-indigo-600 shadow-sm rounded-lg transition-all font-semibold">Qwen Max</button>
-          <button type="button" onclick="setPreset('siliconflow')" class="px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs bg-white text-slate-700 hover:text-indigo-600 shadow-sm rounded-lg transition-all font-semibold">SiliconFlow</button>
+          <button type="button" onclick="setPreset('gemini')" class="px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs bg-white text-slate-700 hover:text-indigo-600 shadow-sm rounded-lg transition-all font-semibold">谷歌 Gemini</button>
+          <button type="button" onclick="setPreset('zhipu')" class="px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs bg-white text-slate-700 hover:text-indigo-600 shadow-sm rounded-lg transition-all font-semibold">智谱 GLM-4V</button>
+          <button type="button" onclick="setPreset('qwen-max')" class="px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs bg-white text-slate-700 hover:text-indigo-600 shadow-sm rounded-lg transition-all font-semibold">通义千问 Max</button>
+          <button type="button" onclick="setPreset('siliconflow')" class="px-3 sm:px-4 py-1.5 text-[11px] sm:text-xs bg-white text-slate-700 hover:text-indigo-600 shadow-sm rounded-lg transition-all font-semibold">硅基流动</button>
         </div>
       </div>
       
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-5">
         <div>
-          <label class="block text-[10px] sm:text-xs font-semibold text-slate-500 mb-1 sm:mb-1.5 uppercase tracking-wider">Base URL</label>
+          <label class="block text-[10px] sm:text-xs font-semibold text-slate-500 mb-1 sm:mb-1.5 uppercase tracking-wider">接口地址 (Base URL)</label>
           <input type="text" id="apiBaseUrl" class="w-full text-xs sm:text-sm bg-slate-50 px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-xl input-glow outline-none transition-all text-slate-700 font-mono">
         </div>
         <div>
-          <label class="block text-[10px] sm:text-xs font-semibold text-slate-500 mb-1 sm:mb-1.5 uppercase tracking-wider">Vision Model</label>
+          <label class="block text-[10px] sm:text-xs font-semibold text-slate-500 mb-1 sm:mb-1.5 uppercase tracking-wider">视觉模型 (Vision Model)</label>
           <input type="text" id="apiModel" class="w-full text-xs sm:text-sm bg-indigo-50/50 px-3 sm:px-4 py-2 sm:py-2.5 border border-indigo-100 rounded-xl input-glow outline-none transition-all font-bold text-indigo-700 font-mono">
         </div>
         <div>
-          <label class="block text-[10px] sm:text-xs font-semibold text-slate-500 mb-1 sm:mb-1.5 uppercase tracking-wider">API Key</label>
+          <label class="block text-[10px] sm:text-xs font-semibold text-slate-500 mb-1 sm:mb-1.5 uppercase tracking-wider">API 密钥 (API Key)</label>
           <input type="password" id="apiKey" class="w-full text-xs sm:text-sm bg-slate-50 px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-xl input-glow outline-none transition-all text-slate-700 font-mono">
         </div>
       </div>
 
       <div class="pt-4 sm:pt-5 border-t border-slate-100">
-        <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <span>🎯 提取指标名称 <span class="text-slate-400 font-normal text-[10px] sm:text-xs sm:ml-2">（AI 将严格按此列表抓取数据）</span></span>
-          <button type="button" onclick="resetDefaultHeaders()" class="self-start sm:self-auto text-indigo-500 hover:text-indigo-700 transition-colors text-[10px] sm:text-xs font-medium bg-indigo-50 px-2 sm:px-3 py-1 rounded-md">恢复默认 PAM 指标</button>
+          
+          <!-- 核心新增：多仪器预设按键 -->
+          <div class="flex items-center gap-2 self-start sm:self-auto">
+            <button type="button" onclick="setInstrument('PAM')" class="text-indigo-600 hover:text-indigo-800 transition-colors text-[10px] sm:text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg border border-indigo-100 flex items-center gap-1.5 shadow-sm">
+              <i class="fa-brands fa-pagelines"></i> 光合仪
+            </button>
+            <button type="button" onclick="setInstrument('NBI')" class="text-emerald-600 hover:text-emerald-800 transition-colors text-[10px] sm:text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-100 flex items-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-leaf"></i> 氮平衡仪
+            </button>
+          </div>
         </label>
-        <textarea id="targetHeadersInput" rows="3" class="w-full text-[11px] sm:text-sm font-mono leading-relaxed px-3 sm:px-4 py-2 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl input-glow outline-none transition-all text-slate-700" placeholder="例如: protocol_id, Leaf Temperature..."></textarea>
+        <textarea id="targetHeadersInput" rows="3" class="w-full text-[11px] sm:text-sm font-mono leading-relaxed px-3 sm:px-4 py-2 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl input-glow outline-none transition-all text-slate-700" placeholder="点击右上角按钮快速载入，或手动输入（逗号隔开）..."></textarea>
       </div>
     </div>
 
@@ -182,7 +191,7 @@
            .replace(/'/g, "&#039;");
     }
 
-    const DB_NAME = 'ImageCacheDB_Manual_Final';
+    const DB_NAME = 'ImageCacheDB_MultiDevice';
     const DB_VERSION = 1;
     let db;
 
@@ -266,16 +275,9 @@
     let allColumns = ["样本名称"];
     let isProcessing = false;
 
-    // 默认 PAM 常用指标库
-    const DEFAULT_HEADERS = [
-      "protocol_id", "Ambient Humidity", "Ambient Pressure", "Ambient Temperature", 
-      "Chamber Temperature", "ECS_tau", "ECSt mAU", "FmPrime", "FoPrime", "Fs", 
-      "Fv over FmP", "LEF", "Leaf Temperature", "Leaf Temperature Differenial", 
-      "Light Intensity PAR", "NPQt", "P700 DIRK ampl", "PS1 Active Centers", 
-      "PS1 Open Centers", "PS1 Over Reduced Centers", "PS1 Oxidized Centers", 
-      "Phi2", "PhiNO", "PhiNPQ", "SPAD", "gH+", "kP700", "leaf angle", 
-      "leaf_thickness", "pump", "qL", "tP700", "test_data_raw_PAM", "vH+", "v_initial_P700"
-    ];
+    // 🌟 定义两种仪器的默认指标库
+    const PAM_HEADERS = "protocol_id, Ambient Humidity, Ambient Pressure, Ambient Temperature, Chamber Temperature, ECS_tau, ECSt mAU, FmPrime, FoPrime, Fs, Fv over FmP, LEF, Leaf Temperature, Leaf Temperature Differenial, Light Intensity PAR, NPQt, P700 DIRK ampl, PS1 Active Centers, PS1 Open Centers, PS1 Over Reduced Centers, PS1 Oxidized Centers, Phi2, PhiNO, PhiNPQ, SPAD, gH+, kP700, leaf angle, leaf_thickness, pump, qL, tP700, test_data_raw_PAM, vH+, v_initial_P700";
+    const NBI_HEADERS = "NBI, Chl, Flav";
 
     const clickUploadZone = document.getElementById('clickUploadZone');
     const fileInput = document.getElementById('fileInput');
@@ -307,18 +309,23 @@
       saveApiSettings();
     }
 
-    function resetDefaultHeaders() {
-      targetHeadersInput.value = DEFAULT_HEADERS.join(', ');
+    // 🌟 一键切换仪器目标库
+    window.setInstrument = function(type) {
+      if (type === 'PAM') {
+        targetHeadersInput.value = PAM_HEADERS;
+      } else if (type === 'NBI') {
+        targetHeadersInput.value = NBI_HEADERS;
+      }
       saveApiSettings();
-    }
+    };
 
     function loadApiSettings() {
       document.getElementById('apiBaseUrl').value = localStorage.getItem('api_base_url') || 'https://generativelanguage.googleapis.com/v1beta/openai';
       document.getElementById('apiModel').value = localStorage.getItem('api_model') || 'gemini-1.5-flash';
       document.getElementById('apiKey').value = localStorage.getItem('api_key') || '';
       
-      const savedHeaders = localStorage.getItem('user_target_headers_final');
-      targetHeadersInput.value = savedHeaders || DEFAULT_HEADERS.join(', ');
+      const savedHeaders = localStorage.getItem('user_target_headers_multidevice');
+      targetHeadersInput.value = savedHeaders || PAM_HEADERS;
       
       updateColumnsFromInput();
     }
@@ -327,7 +334,7 @@
       localStorage.setItem('api_base_url', document.getElementById('apiBaseUrl').value.trim());
       localStorage.setItem('api_model', document.getElementById('apiModel').value.trim());
       localStorage.setItem('api_key', document.getElementById('apiKey').value.trim());
-      localStorage.setItem('user_target_headers_final', targetHeadersInput.value.trim());
+      localStorage.setItem('user_target_headers_multidevice', targetHeadersInput.value.trim());
       updateColumnsFromInput();
     }
 
@@ -349,11 +356,11 @@
       const stateToSave = filesState.map(f => ({
         id: f.id, customName: f.customName, status: f.status, data: f.data, errorMsg: f.errorMsg
       }));
-      localStorage.setItem('extracted_data_state_manual_final', JSON.stringify(stateToSave));
+      localStorage.setItem('extracted_data_state_multidevice', JSON.stringify(stateToSave));
     }
 
     function loadTableData() {
-      const savedState = localStorage.getItem('extracted_data_state_manual_final');
+      const savedState = localStorage.getItem('extracted_data_state_multidevice');
       if (savedState) {
         filesState = JSON.parse(savedState);
         if (filesState.length > 0) {
@@ -456,15 +463,17 @@
       return raw.map(h => h.trim()).filter(Boolean);
     }
 
+    // 智能映射：光合仪容错及通用对齐
     function mapKeyToTarget(rawKey, targets) {
       let key = (rawKey || '').trim();
       let lower = key.toLowerCase().replace(/[_]+/g, ' ').replace(/\s+/g, ' ');
 
-      if (lower.includes('leaf temperature differen') || lower.includes('differential')) {
+      // 如果目标包含光合仪特有温差，启用强力容错
+      const hasDiffTarget = targets.some(t => t.toLowerCase().includes('differen'));
+      if (hasDiffTarget && (lower.includes('leaf temperature differen') || lower.includes('differential'))) {
         for (const t of targets) {
           if (t.toLowerCase().includes('differen')) return t;
         }
-        return 'Leaf Temperature Differenial';
       }
 
       for (const t of targets) {
@@ -492,7 +501,7 @@
               await saveImageToCache(pendingItem.id, base64);
               await pruneImageCache();
             } else {
-              throw new Error('原图缓存已过期，请再次导入图片');
+              throw new Error('原图缓存已过期，请再次导入图片（部署后跨域无法提取本地图片）');
             }
           }
 
@@ -546,12 +555,19 @@
       if (!baseUrl.endsWith('/chat/completions')) baseUrl += '/chat/completions';
 
       const targets = getTargetHeaders();
+      const targetsStr = targets.join(', ').toLowerCase();
+      
+      // 🌟 根据选择的仪器，动态装载强调提示词
+      let specialNote = "";
+      if (targetsStr.includes("differenial") || targetsStr.includes("differential")) {
+        specialNote = `\n【⚠️ 温差字段特殊提醒】：\n图片中包含有 "Leaf Temperature Differenial"（温差行，屏幕拼写可能为 Differenial 或 Differential），绝对不能漏掉！必须将其数值准确提取出来。`;
+      } else if (targetsStr.includes("nbi") && targetsStr.includes("chl")) {
+        specialNote = `\n【⚠️ 氮平衡仪提取提醒】：\n图片为氮平衡仪(Dualex/Force-A)屏幕，请重点准确提取 NBI, Chl, Flav 三个关键指标的数值。`;
+      }
 
       const systemPrompt = `你是一个精密的科学仪器屏幕数据提取助手。请仔细观察图片，重点提取以下【用户指定的指标列表】中的数值：
 [${targets.join(', ')}]
-
-【⚠️ 温差字段特殊提醒】：
-图片中包含有 "Leaf Temperature Differenial"（温差行，屏幕拼写可能为 Differenial 或 Differential），绝对不能漏掉！必须将其数值准确提取出来。
+${specialNote}
 
 规则：
 1. 请从上到下完整扫描图片每一行，将上述列表中的指标完整提取出来。
@@ -749,7 +765,7 @@
         emptyListTip.classList.remove('hidden'); 
         renderTable(); 
         updateUI();
-        localStorage.removeItem('extracted_data_state_manual_final');
+        localStorage.removeItem('extracted_data_state_multidevice');
         await clearImageCache();
       }
     });
@@ -759,6 +775,7 @@
       exportCsvBtn.disabled = !filesState.some(f => f.status === 'success');
     }
 
+    // 强力安全启动层
     (async function initApp() {
       loadApiSettings();
       try {
