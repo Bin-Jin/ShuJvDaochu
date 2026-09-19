@@ -47,8 +47,8 @@
 
   <div class="max-w-[1400px] mx-auto space-y-8">
     
-    <!-- 顶部标题栏 (毛玻璃悬浮效果) -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/70 backdrop-blur-xl p-6 md:px-8 md:py-6 rounded-3xl shadow-xl shadow-slate-200/40 border border-white sticky top-4 z-50 transition-all">
+    <!-- 顶部标题栏 (取消了 sticky 置顶，跟随页面自然滚动) -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/70 backdrop-blur-xl p-6 md:px-8 md:py-6 rounded-3xl shadow-xl shadow-slate-200/40 border border-white relative transition-all">
       <div>
         <h1 class="text-3xl font-extrabold flex items-center gap-3 tracking-tight">
           <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 text-white">
@@ -108,7 +108,7 @@
     <!-- 工作区 -->
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 relative">
       <!-- 左侧：上传区与队列 -->
-      <div class="space-y-6 flex flex-col lg:sticky lg:top-[120px] lg:h-[calc(100vh-140px)] lg:self-start lg:col-span-1">
+      <div class="space-y-6 flex flex-col lg:sticky lg:top-[20px] lg:h-[calc(100vh-40px)] lg:self-start lg:col-span-1">
         
         <!-- 大按钮式上传区 -->
         <div id="clickUploadZone" class="bg-gradient-to-b from-indigo-50 to-white border-2 border-dashed border-indigo-200 hover:border-indigo-400 transition-all duration-300 py-8 rounded-3xl flex flex-col items-center justify-center text-center cursor-pointer relative overflow-hidden group shadow-sm hover:shadow-md hover:shadow-indigo-500/10">
@@ -138,14 +138,14 @@
       </div>
 
       <!-- 右侧：数据表格区 -->
-      <div class="lg:col-span-3 h-[calc(100vh-140px)]">
+      <div class="lg:col-span-3 h-[calc(100vh-40px)]">
         <div class="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40 p-6 flex flex-col h-full relative overflow-hidden">
           
           <!-- 表格头部操作区 -->
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-5 shrink-0">
             <div>
               <h2 class="font-extrabold text-slate-800 text-xl tracking-tight">结构化数据矩阵</h2>
-              <p class="text-xs text-slate-500 mt-1 font-medium">已自动去重并对齐。点击任何单元格即可无缝修改。</p>
+              <p class="text-xs text-slate-500 mt-1 font-medium">已开启棋盘格高亮显示。点击任何单元格即可无缝修改。</p>
             </div>
             <button id="exportCsvBtn" disabled class="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition-all duration-300 hover:shadow-emerald-500/40 hover:-translate-y-0.5 flex items-center gap-2 shrink-0 border border-emerald-400/50">
               <i class="fa-solid fa-download"></i> 导出 CSV 数据
@@ -162,9 +162,11 @@
               <p class="text-sm font-medium">数据表将在此处生成</p>
             </div>
             
-            <!-- 表格本体 -->
-            <table id="dataTable" class="w-full text-xs text-left border-collapse hidden relative">
-              <thead id="tableHead" class="bg-slate-100/80 backdrop-blur-md text-slate-600 sticky top-0 z-20 shadow-sm"></thead>
+            <!-- 表格本体: 全局居中 -->
+            <table id="dataTable" class="w-full text-xs text-center border-collapse hidden relative">
+              <!-- 表头底部边框加粗 -->
+              <thead id="tableHead" class="bg-slate-100/80 backdrop-blur-md text-slate-600 sticky top-0 z-20 shadow-sm border-b-2 border-slate-200"></thead>
+              <!-- 表身使用垂直分割线样式 -->
               <tbody id="tableBody" class="divide-y divide-slate-100 font-mono text-slate-700 bg-white"></tbody>
             </table>
           </div>
@@ -174,7 +176,6 @@
   </div>
 
   <script>
-    // 以下为 JS 逻辑代码，保持绝对纯净，未作任何功能删减
     function escapeHtml(unsafe) {
       return (unsafe || '').toString()
            .replace(/&/g, "&amp;")
@@ -458,6 +459,7 @@
       return raw.map(h => h.trim()).filter(Boolean);
     }
 
+    // 智能映射：带强力拼写容错
     function mapKeyToTarget(rawKey, targets) {
       let key = (rawKey || '').trim();
       let lower = key.toLowerCase().replace(/[_]+/g, ' ').replace(/\s+/g, ' ');
@@ -705,25 +707,28 @@
       }
       tablePlaceholder.classList.add('hidden'); dataTable.classList.remove('hidden');
 
-      // 优化表头 UI：增加透明模糊度与更精致的排版
-      tableHead.innerHTML = `<tr>${allColumns.map(col => {
-        if (col === "样本名称") return `<th class="px-4 py-3.5 font-bold text-slate-700 whitespace-nowrap bg-slate-100/90 backdrop-blur-sm border-b border-slate-200 z-30 tracking-wide text-xs"><span>${escapeHtml(col)}</span></th>`;
-        return `<th class="px-4 py-3.5 font-bold text-slate-700 whitespace-nowrap bg-slate-100/90 backdrop-blur-sm border-b border-slate-200 group/th min-w-[130px] z-30 tracking-wide text-xs">
-          <div class="flex items-center justify-between gap-3">
+      // 优化表头 UI：文本全居中 (text-center)，加入单双列交替背景色
+      tableHead.innerHTML = `<tr>${allColumns.map((col, idx) => {
+        const headBg = idx % 2 === 1 ? 'bg-slate-200/60' : 'bg-slate-100/90';
+        if (col === "样本名称") return `<th class="px-4 py-3.5 font-bold text-slate-700 whitespace-nowrap ${headBg} backdrop-blur-sm border-b border-slate-200 border-r border-slate-200/50 z-30 tracking-wide text-xs text-center shadow-[4px_0_8px_-4px_rgba(0,0,0,0.02)]"><span>${escapeHtml(col)}</span></th>`;
+        return `<th class="px-4 py-3.5 font-bold text-slate-700 whitespace-nowrap ${headBg} backdrop-blur-sm border-b border-slate-200 border-r border-slate-200/50 group/th min-w-[130px] z-30 tracking-wide text-xs text-center">
+          <div class="flex items-center justify-center gap-2 relative">
             <span>${escapeHtml(col)}</span>
-            <button onclick="deleteColumn('${escapeHtml(col).replace(/'/g, "\\'")}')" class="w-5 h-5 flex items-center justify-center rounded text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/th:opacity-100"><i class="fa-solid fa-xmark text-[10px]"></i></button>
+            <button onclick="deleteColumn('${escapeHtml(col).replace(/'/g, "\\'")}')" class="absolute right-0 w-5 h-5 flex items-center justify-center rounded text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/th:opacity-100"><i class="fa-solid fa-xmark text-[10px]"></i></button>
           </div>
         </th>`;
       }).join('')}<th class="px-4 py-3.5 font-bold text-slate-400 whitespace-nowrap bg-slate-100/90 backdrop-blur-sm border-b border-slate-200 text-center sticky right-0 z-40 w-14 shadow-[-8px_0_12px_-4px_rgba(0,0,0,0.03)] text-xs">操作</th></tr>`;
 
-      // 优化表格行 UI：带有淡入动画和悬停高亮，输入框无边界设计
-      tableBody.innerHTML = successfulItems.map(item => {
-        return `<tr class="hover:bg-indigo-50/30 transition-colors fade-in-row group/tr">
-          ${allColumns.map(col => {
-            if (col === "样本名称") return `<td class="px-2 py-1 font-sans font-bold text-slate-800 border-b border-slate-100 whitespace-nowrap bg-white/40"><input type="text" value="${escapeHtml(item.customName)}" class="bg-transparent hover:bg-white focus:bg-white px-2 py-2 border border-transparent focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 rounded-lg outline-none transition-all w-full" onchange="updateItemName('${item.id}', this.value)"></td>`;
+      // 优化表格行 UI：全居中，加入行斑马纹 + 列交替背景色的棋盘格效果
+      tableBody.innerHTML = successfulItems.map((item, index) => {
+        const rowBg = index % 2 === 0 ? 'bg-white' : 'bg-slate-50/40';
+        return `<tr class="hover:bg-indigo-50/40 transition-colors fade-in-row group/tr ${rowBg}">
+          ${allColumns.map((col, idx) => {
+            const cellBg = idx % 2 === 1 ? 'bg-slate-100/50' : 'bg-transparent';
+            if (col === "样本名称") return `<td class="px-2 py-1 font-sans font-bold text-slate-800 border-b border-slate-100 border-r border-slate-100/50 whitespace-nowrap ${cellBg}"><input type="text" value="${escapeHtml(item.customName)}" class="bg-transparent hover:bg-white focus:bg-white px-2 py-2 border border-transparent focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 rounded-lg outline-none transition-all w-full text-center" onchange="updateItemName('${item.id}', this.value)"></td>`;
             const val = item.data[col] !== undefined ? item.data[col] : '';
-            return `<td class="px-2 py-1 border-b border-slate-100 whitespace-nowrap group-hover/tr:bg-white/40 transition-colors"><input type="text" value="${escapeHtml(val)}" class="text-slate-600 bg-transparent hover:bg-slate-50 focus:bg-white px-2 py-2 border border-transparent focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 rounded-lg outline-none transition-all w-full placeholder:text-slate-200" placeholder="-" onchange="updateCellValue('${item.id}', '${escapeHtml(col).replace(/'/g, "\\'")}', this.value)"></td>`;
-          }).join('')}<td class="px-2 py-1 border-b border-slate-100 whitespace-nowrap text-center bg-white/40 sticky right-0 z-10 shadow-[-8px_0_12px_-4px_rgba(0,0,0,0.02)] group-hover/tr:bg-indigo-50/30 transition-colors"><button onclick="deleteRowItem('${item.id}')" class="w-7 h-7 mx-auto flex items-center justify-center rounded-md text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/tr:opacity-100"><i class="fa-solid fa-trash-can text-[11px]"></i></button></td></tr>`;
+            return `<td class="px-2 py-1 border-b border-slate-100 border-r border-slate-100/50 whitespace-nowrap ${cellBg} transition-colors text-center"><input type="text" value="${escapeHtml(val)}" class="text-slate-600 bg-transparent hover:bg-slate-50 focus:bg-white px-2 py-2 border border-transparent focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 rounded-lg outline-none transition-all w-full placeholder:text-slate-200 text-center" placeholder="-" onchange="updateCellValue('${item.id}', '${escapeHtml(col).replace(/'/g, "\\'")}', this.value)"></td>`;
+          }).join('')}<td class="px-2 py-1 border-b border-slate-100 whitespace-nowrap text-center sticky right-0 z-10 shadow-[-8px_0_12px_-4px_rgba(0,0,0,0.02)] group-hover/tr:bg-indigo-50/40 transition-colors bg-white"><button onclick="deleteRowItem('${item.id}')" class="w-7 h-7 mx-auto flex items-center justify-center rounded-md text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/tr:opacity-100"><i class="fa-solid fa-trash-can text-[11px]"></i></button></td></tr>`;
       }).join('');
     }
 
