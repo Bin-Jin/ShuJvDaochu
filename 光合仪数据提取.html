@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>光合仪数据提取器 - 手动指定指标版</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    ::-webkit-scrollbar { height: 8px; width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen p-4 md:p-8 relative">
+  
+  <div id="globalDropZone" class="fixed inset-0 bg-indigo-600/90 z-[100] hidden flex-col items-center justify-center text-white border-8 border-indigo-400 border-dashed m-4 rounded-3xl backdrop-blur-sm transition-all duration-200">
+    <div class="pointer-events-none flex flex-col items-center">
+      <i class="fa-solid fa-cloud-arrow-up text-7xl mb-6 animate-bounce"></i>
+      <h2 class="text-4xl font-bold mb-3 tracking-wide">松开鼠标，开始解析</h2>
+      <p class="text-indigo-200 text-lg">支持根据手动输入的指标定向提取与强力拼写容错</p>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto space-y-6">
+    
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+      <div>
+        <h1 class="text-2xl font-bold flex items-center gap-3 text-slate-900">
+          <i class="fa-solid fa-microscope text-indigo-600"></i> 光合仪数据提取器 <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-normal">手动指定指标版</span>
+        </h1>
+        <p class="text-sm text-slate-500 mt-1">您可以随时修改下方输入框中的指标，AI 将严格按您的要求定向提取对应数据</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button id="clearAllBtn" class="px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 rounded-lg border border-rose-200 transition flex items-center gap-2">
+          <i class="fa-regular fa-trash-can"></i> 清空全部数据
+        </button>
+      </div>
+    </div>
+
+    <!-- API 配置与手动指定指标输入框 -->
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-base font-semibold text-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-indigo-600"></i> AI 模型与接口配置
+        </h2>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" onclick="setPreset('gemini')" class="px-3 py-1 text-xs bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-md transition font-medium">Google Gemini</button>
+          <button type="button" onclick="setPreset('zhipu')" class="px-3 py-1 text-xs bg-violet-50 text-violet-700 hover:bg-violet-100 border border-violet-200 rounded-md transition font-medium">智谱 GLM-4V</button>
+          <button type="button" onclick="setPreset('qwen-max')" class="px-3 py-1 text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-md transition font-medium">通义千问 Max</button>
+          <button type="button" onclick="setPreset('siliconflow')" class="px-3 py-1 text-xs bg-slate-100 hover:bg-slate-200 rounded-md transition">硅基流动</button>
+        </div>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">接口地址 (Base URL)</label>
+          <input type="text" id="apiBaseUrl" class="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">模型名称 (Vision Model)</label>
+          <input type="text" id="apiModel" class="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-indigo-700">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">API 密钥 (API Key)</label>
+          <input type="password" id="apiKey" class="w-full text-sm px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+      </div>
+
+      <!-- 手动输入要测的指标 -->
+      <div class="pt-2 border-t border-slate-100">
+        <label class="block text-xs font-medium text-slate-700 mb-1 flex items-center justify-between">
+          <span>手动指定要测的指标（用英文逗号 , 隔开，测什么新图就改这里）</span>
+          <button type="button" onclick="resetDefaultHeaders()" class="text-indigo-600 hover:underline text-[11px]">恢复默认 PAM 指标库</button>
+        </label>
+        <textarea id="targetHeadersInput" rows="2" class="w-full text-xs font-mono px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-700" placeholder="例如: protocol_id, Leaf Temperature, Leaf Temperature Differenial, Light Intensity PAR..."></textarea>
+      </div>
+    </div>
+
+    <!-- 工作区 -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 relative">
+      <div class="space-y-6 flex flex-col lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)] lg:self-start">
+        <div id="clickUploadZone" class="border-2 border-dashed border-indigo-200 hover:border-indigo-400 bg-indigo-50/40 hover:bg-indigo-50/70 transition py-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer relative overflow-hidden shrink-0 group">
+          <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
+          <div class="w-12 h-12 bg-indigo-600 text-white rounded-xl flex items-center justify-center text-xl mb-3 shadow-md shadow-indigo-200 transition-transform group-hover:scale-110">
+            <i class="fa-solid fa-plus"></i>
+          </div>
+          <p class="font-medium text-slate-700 text-sm">点击选择图片或拖入任意位置</p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0">
+            <span class="text-sm font-semibold text-slate-700">处理进度 <span class="text-xs text-slate-400 font-normal ml-1">(近50张支持重提)</span></span>
+            <span id="fileCountBadge" class="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full">0 项</span>
+          </div>
+          <div id="fileList" class="divide-y divide-slate-100 flex-1 overflow-y-auto mt-2 pb-2 pr-1">
+            <p id="emptyListTip" class="text-center py-8 text-xs text-slate-400">暂无已添加的文件</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="lg:col-span-2 space-y-4">
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col h-full min-h-[600px]">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 shrink-0">
+            <div>
+              <h2 class="font-semibold text-slate-800 text-lg">全量数据表</h2>
+              <p class="text-xs text-slate-400 mt-0.5">严格按照您上方指定的指标提取。点击任意单元格可修改。</p>
+            </div>
+            <button id="exportCsvBtn" disabled class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg shadow-sm transition flex items-center gap-2 shrink-0">
+              <i class="fa-solid fa-file-arrow-down"></i> 导出为 CSV
+            </button>
+          </div>
+
+          <div class="flex-1 overflow-auto mt-4 relative" id="tableWrapper">
+            <div id="tablePlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 z-10">
+              <i class="fa-solid fa-table-list text-4xl mb-3 text-slate-200"></i>
+              <p class="text-sm">等待识别...</p>
+            </div>
+            <table id="dataTable" class="w-full text-xs text-left border-collapse hidden relative">
+              <thead id="tableHead" class="bg-slate-50 text-slate-600 sticky top-0 border-b border-slate-200 z-20"></thead>
+              <tbody id="tableBody" class="divide-y divide-slate-100 font-mono"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function escapeHtml(unsafe) {
+      return (unsafe || '').toString()
+           .replace(/&/g, "&amp;")
+           .replace(/</g, "&lt;")
+           .replace(/>/g, "&gt;")
+           .replace(/"/g, "&quot;")
+           .replace(/'/g, "&#039;");
+    }
+
+    const DB_NAME = 'ImageCacheDB_ManualHeaders';
+    const DB_VERSION = 1;
+    let db;
+
+    function initDB() {
+      return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = (event) => {
+          db = event.target.result;
+          if (!db.objectStoreNames.contains('images')) {
+            const store = db.createObjectStore('images', { keyPath: 'id' });
+            store.createIndex('timestamp', 'timestamp', { unique: false });
+          }
+        };
+        request.onsuccess = (event) => {
+          db = event.target.result;
+          resolve();
+        };
+        request.onerror = (event) => reject(event.target.error);
+      });
+    }
+
+    async function saveImageToCache(id, base64Data) {
+      if (!db) await initDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('images', 'readwrite');
+        const store = tx.objectStore('images');
+        store.put({ id: id, data: base64Data, timestamp: Date.now() });
+        tx.oncomplete = resolve;
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    async function getImageFromCache(id) {
+      if (!db) await initDB();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction('images', 'readonly');
+        const store = tx.objectStore('images');
+        const request = store.get(id);
+        request.onsuccess = () => resolve(request.result ? request.result.data : null);
+        request.onerror = () => reject(request.error);
+      });
+    }
+
+    async function pruneImageCache() {
+      if (!db) await initDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction('images', 'readwrite');
+        const store = tx.objectStore('images');
+        const index = store.index('timestamp');
+        const countReq = store.count();
+        countReq.onsuccess = () => {
+          if (countReq.result > 50) {
+            let toDelete = countReq.result - 50;
+            index.openCursor().onsuccess = (e) => {
+              const cursor = e.target.result;
+              if (cursor && toDelete > 0) {
+                cursor.delete();
+                toDelete--;
+                cursor.continue();
+              } else {
+                resolve();
+              }
+            };
+          } else {
+            resolve();
+          }
+        };
+      });
+    }
+
+    async function clearImageCache() {
+      if (!db) await initDB();
+      return new Promise((resolve) => {
+        const tx = db.transaction('images', 'readwrite');
+        const store = tx.objectStore('images');
+        store.clear().onsuccess = resolve;
+      });
+    }
+
+    let filesState = []; 
+    let allColumns = ["样本名称"];
+    let isProcessing = false;
+
+    // 默认 PAM 常用指标库
+    const DEFAULT_HEADERS = [
+      "protocol_id", "Ambient Humidity", "Ambient Pressure", "Ambient Temperature", 
+      "Chamber Temperature", "ECS_tau", "ECSt mAU", "FmPrime", "FoPrime", "Fs", 
+      "Fv over FmP", "LEF", "Leaf Temperature", "Leaf Temperature Differenial", 
+      "Light Intensity PAR", "NPQt", "P700 DIRK ampl", "PS1 Active Centers", 
+      "PS1 Open Centers", "PS1 Over Reduced Centers", "PS1 Oxidized Centers", 
+      "Phi2", "PhiNO", "PhiNPQ", "SPAD", "gH+", "kP700", "leaf angle", 
+      "leaf_thickness", "pump", "qL", "tP700", "test_data_raw_PAM", "vH+", "v_initial_P700"
+    ];
+
+    const clickUploadZone = document.getElementById('clickUploadZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileList = document.getElementById('fileList');
+    const emptyListTip = document.getElementById('emptyListTip');
+    const fileCountBadge = document.getElementById('fileCountBadge');
+    const exportCsvBtn = document.getElementById('exportCsvBtn');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    const tablePlaceholder = document.getElementById('tablePlaceholder');
+    const dataTable = document.getElementById('dataTable');
+    const tableHead = document.getElementById('tableHead');
+    const tableBody = document.getElementById('tableBody');
+    const targetHeadersInput = document.getElementById('targetHeadersInput');
+
+    function setPreset(type) {
+      if (type === 'gemini') {
+        document.getElementById('apiBaseUrl').value = 'https://generativelanguage.googleapis.com/v1beta/openai';
+        document.getElementById('apiModel').value = 'gemini-1.5-flash';
+      } else if (type === 'zhipu') {
+        document.getElementById('apiBaseUrl').value = 'https://open.bigmodel.cn/api/paas/v4';
+        document.getElementById('apiModel').value = 'glm-4v-flash';
+      } else if (type === 'qwen-max') {
+        document.getElementById('apiBaseUrl').value = 'https://dashscope.aliyuncs.com/compatible-mode/v1';
+        document.getElementById('apiModel').value = 'qwen-vl-max';
+      } else if (type === 'siliconflow') {
+        document.getElementById('apiBaseUrl').value = 'https://api.siliconflow.cn/v1';
+        document.getElementById('apiModel').value = 'Qwen/Qwen2-VL-7B-Instruct';
+      }
+      saveApiSettings();
+    }
+
+    function resetDefaultHeaders() {
+      targetHeadersInput.value = DEFAULT_HEADERS.join(', ');
+      saveApiSettings();
+    }
+
+    function loadApiSettings() {
+      document.getElementById('apiBaseUrl').value = localStorage.getItem('api_base_url') || 'https://generativelanguage.googleapis.com/v1beta/openai';
+      document.getElementById('apiModel').value = localStorage.getItem('api_model') || 'gemini-1.5-flash';
+      document.getElementById('apiKey').value = localStorage.getItem('api_key') || '';
+      
+      const savedHeaders = localStorage.getItem('user_target_headers');
+      targetHeadersInput.value = savedHeaders || DEFAULT_HEADERS.join(', ');
+      
+      updateColumnsFromInput();
+    }
+
+    function saveApiSettings() {
+      localStorage.setItem('api_base_url', document.getElementById('apiBaseUrl').value.trim());
+      localStorage.setItem('api_model', document.getElementById('apiModel').value.trim());
+      localStorage.setItem('api_key', document.getElementById('apiKey').value.trim());
+      localStorage.setItem('user_target_headers', targetHeadersInput.value.trim());
+      updateColumnsFromInput();
+    }
+
+    function updateColumnsFromInput() {
+      const raw = targetHeadersInput.value.split(',');
+      const parsed = raw.map(h => h.trim()).filter(Boolean);
+      if (parsed.length > 0) {
+        allColumns = ["样本名称", ...parsed];
+        renderTable();
+        saveTableData();
+      }
+    }
+
+    targetHeadersInput.addEventListener('input', saveApiSettings);
+    ['apiBaseUrl', 'apiModel', 'apiKey'].forEach(id => {
+      document.getElementById(id).addEventListener('input', saveApiSettings);
+    });
+
+    function saveTableData() {
+      const stateToSave = filesState.map(f => ({
+        id: f.id, customName: f.customName, status: f.status, data: f.data, errorMsg: f.errorMsg
+      }));
+      localStorage.setItem('extracted_data_state_manual', JSON.stringify(stateToSave));
+    }
+
+    function loadTableData() {
+      const savedState = localStorage.getItem('extracted_data_state_manual');
+      if (savedState) {
+        filesState = JSON.parse(savedState);
+        if (filesState.length > 0) {
+          emptyListTip.classList.add('hidden');
+          filesState.forEach(item => {
+            if (item.status === 'processing') item.status = 'pending';
+            renderQueueItemDOM(item);
+          });
+          renderTable();
+          updateUI();
+          if (filesState.some(f => f.status === 'pending') && !isProcessing) {
+              processQueue();
+          }
+        }
+      }
+    }
+
+    const globalDropZone = document.getElementById('globalDropZone');
+    let dragCounter = 0;
+    window.addEventListener('dragenter', (e) => {
+      e.preventDefault();
+      if (e.dataTransfer.types.includes('Files')) {
+        dragCounter++;
+        globalDropZone.classList.add('flex');
+        globalDropZone.classList.remove('hidden');
+      }
+    });
+    window.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      dragCounter--;
+      if (dragCounter === 0) {
+        globalDropZone.classList.add('hidden');
+        globalDropZone.classList.remove('flex');
+      }
+    });
+    window.addEventListener('dragover', (e) => e.preventDefault());
+    window.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dragCounter = 0;
+      globalDropZone.classList.add('hidden');
+      globalDropZone.classList.remove('flex');
+      if (e.dataTransfer.files.length) handleNewFiles(e.dataTransfer.files);
+    });
+
+    clickUploadZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length) handleNewFiles(e.target.files);
+      fileInput.value = '';
+    });
+
+    async function handleNewFiles(files) {
+      const apiKey = document.getElementById('apiKey').value.trim();
+      if (!apiKey) { alert('请先在上方填入 API 密钥！'); return; }
+      
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith('image/')) continue;
+        const fileId = 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+        const item = { id: fileId, customName: file.name.replace(/\.[^/.]+$/, ""), status: 'pending', data: null, file: file, errorMsg: '' };
+        filesState.push(item);
+        renderQueueItemDOM(item);
+        setTimeout(() => fileList.scrollTop = fileList.scrollHeight, 50);
+      }
+      saveTableData();
+      updateUI();
+      if (!isProcessing) processQueue();
+    }
+
+    function compressImageToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (e) => {
+          const img = new Image();
+          img.src = e.target.result;
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const MAX_SIZE = 1200;
+            let width = img.width;
+            let height = img.height;
+            if (width > height && width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } 
+            else if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+            canvas.width = width;
+            canvas.height = height;
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, width, height);
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.8));
+          };
+          img.onerror = reject;
+        };
+        reader.onerror = reject;
+      });
+    }
+
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+    function getTargetHeaders() {
+      const raw = targetHeadersInput.value.split(',');
+      return raw.map(h => h.trim()).filter(Boolean);
+    }
+
+    // 智能映射：带强力拼写容错（如 Differenial 错拼自动归入）
+    function mapKeyToTarget(rawKey, targets) {
+      let key = (rawKey || '').trim();
+      let lower = key.toLowerCase().replace(/[_]+/g, ' ').replace(/\s+/g, ' ');
+
+      // 强力拼写容错：无论仪器把 differential 错拼成什么样，直接强行对齐
+      if (lower.includes('leaf temperature differen') || lower.includes('differential')) {
+        for (const t of targets) {
+          if (t.toLowerCase().includes('differen')) {
+            return t;
+          }
+        }
+        return 'Leaf Temperature Differenial';
+      }
+
+      for (const t of targets) {
+        let tLower = t.toLowerCase();
+        if (lower === tLower || lower.includes(tLower) || tLower.includes(lower)) {
+          return t;
+        }
+      }
+      return key;
+    }
+
+    async function processQueue() {
+      isProcessing = true;
+      while (true) {
+        const pendingItem = filesState.find(f => f.status === 'pending');
+        if (!pendingItem) break;
+        
+        pendingItem.status = 'processing';
+        updateQueueItemUI(pendingItem);
+        
+        try {
+          let base64 = await getImageFromCache(pendingItem.id);
+          
+          if (!base64) {
+            if (pendingItem.file) {
+              base64 = await compressImageToBase64(pendingItem.file);
+              await saveImageToCache(pendingItem.id, base64);
+              await pruneImageCache();
+            } else {
+              throw new Error('原图缓存已过期，请重新拖入图片');
+            }
+          }
+
+          const rawEntries = await callVisionApiEntries(base64);
+          const targets = getTargetHeaders();
+          
+          const alignedData = {};
+
+          rawEntries.forEach(([k, val]) => {
+            const standardKey = mapKeyToTarget(k, targets);
+            const strVal = (val !== undefined && val !== null) ? String(val).trim() : '';
+
+            if (strVal && strVal !== '-' && (alignedData[standardKey] === undefined || alignedData[standardKey] === '-' || alignedData[standardKey] === '')) {
+              alignedData[standardKey] = strVal;
+            } else if (alignedData[standardKey] === undefined) {
+              alignedData[standardKey] = strVal;
+            }
+            
+            if (!allColumns.includes(standardKey) && standardKey !== "样本名称") {
+              allColumns.push(standardKey);
+            }
+          });
+
+          pendingItem.status = 'success';
+          pendingItem.data = alignedData;
+
+        } catch (err) {
+          pendingItem.status = 'error';
+          pendingItem.errorMsg = err.message || '识别失败';
+        }
+        
+        updateQueueItemUI(pendingItem);
+        renderTable();
+        updateUI();
+        saveTableData();
+        
+        setTimeout(() => {
+          const wrapper = document.getElementById('tableWrapper');
+          wrapper.scrollTop = wrapper.scrollHeight;
+        }, 50);
+
+        await sleep(1000);
+      }
+      isProcessing = false;
+    }
+
+    async function callVisionApiEntries(base64Url) {
+      let baseUrl = document.getElementById('apiBaseUrl').value.trim().replace(/\/+$/, '');
+      const model = document.getElementById('apiModel').value.trim();
+      const apiKey = document.getElementById('apiKey').value.trim().replace(/[\u4e00-\u9fa5\s]/g, '');
+
+      if (!baseUrl.endsWith('/chat/completions')) baseUrl += '/chat/completions';
+
+      const targets = getTargetHeaders();
+
+      const systemPrompt = `你是一个精密的科学仪器屏幕数据提取助手。请仔细观察图片，重点提取以下【用户指定的指标列表】中的数值：
+[${targets.join(', ')}]
+
+【⚠️ 温差字段特殊提醒】：
+图片中包含有 "Leaf Temperature Differenial"（温差行，屏幕拼写可能为 Differenial 或 Differential），绝对不能漏掉！必须将其数值准确提取出来。
+
+规则：
+1. 请从上到下完整扫描图片每一行，将上述列表中的指标完整提取出来。
+2. 请以 JSON 数组对象形式返回，格式如：
+[
+  {"key": "protocol_id", "value": "3357"},
+  {"key": "Leaf Temperature Differenial", "value": "-5.35"}
+]
+3. 严禁省略中间的数据，不允许出现 "..."。只返回纯 JSON 数组，不要有多余的 markdown 标记。`;
+
+      const response = await fetch(baseUrl, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json', 
+          'Authorization': `Bearer ${apiKey}` 
+        },
+        body: JSON.stringify({
+          model: model,
+          temperature: 0.01,
+          messages: [
+            { 
+              role: "user", 
+              content: [ 
+                { type: "text", text: systemPrompt }, 
+                { type: "image_url", image_url: { url: base64Url } } 
+              ] 
+            }
+          ]
+        })
+      });
+
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        let errMsg = errJson.error?.message || `请求被拒绝 [HTTP ${response.status}]`;
+        if (response.status === 404) errMsg = `[404] 模型 ${model} 不存在或地址有误`;
+        if (response.status === 401) errMsg = `[401] 密钥无效`;
+        if (response.status === 403) errMsg = `[403] 权限拒绝(请检查额度/模型权限)`;
+        throw new Error(errMsg);
+      }
+
+      const res = await response.json();
+      let rawText = res.choices?.[0]?.message?.content || '[]';
+      
+      const match = rawText.match(/\[[\s\S]*\]/);
+      if (match) rawText = match[0];
+      else throw new Error("AI 返回格式异常，未能提取到 JSON 数组数据");
+      
+      const parsedArray = JSON.parse(rawText);
+      return parsedArray.map(item => [item.key, item.value]);
+    }
+
+    function renderQueueItemDOM(item) {
+      emptyListTip.classList.add('hidden');
+      const div = document.createElement('div');
+      div.id = `queue_${item.id}`;
+      div.className = 'py-2.5 flex items-center justify-between gap-2 group/item';
+      div.innerHTML = `
+        <div class="flex items-center gap-2 flex-1 min-w-0">
+          <i class="fa-regular fa-image text-slate-400 text-sm"></i>
+          <input type="text" value="${escapeHtml(item.customName)}" title="修改样本名称" 
+                 class="name-input text-xs font-medium text-slate-700 bg-transparent hover:bg-slate-50 focus:bg-white px-1.5 py-0.5 border border-transparent focus:border-indigo-400 rounded outline-none truncate w-full transition"
+                 onchange="updateItemName('${item.id}', this.value)">
+        </div>
+        <div class="status-box text-xs flex items-center gap-2 shrink-0"></div>
+      `;
+      fileList.appendChild(div);
+      updateQueueItemUI(item);
+    }
+
+    function updateQueueItemUI(item) {
+      const el = document.getElementById(`queue_${item.id}`);
+      if (!el) return;
+      const statusBox = el.querySelector('.status-box');
+      const deleteBtn = `<button onclick="deleteRowItem('${item.id}')" title="删除记录" class="text-slate-300 hover:text-rose-500 transition px-1 opacity-0 group-hover/item:opacity-100"><i class="fa-solid fa-trash-can"></i></button>`;
+
+      if (item.status === 'pending') {
+        statusBox.innerHTML = `<span class="text-slate-400"><i class="fa-solid fa-spinner fa-spin text-indigo-500"></i> 排队</span> ${deleteBtn}`;
+      } else if (item.status === 'processing') {
+        statusBox.innerHTML = `<span class="text-indigo-600 flex items-center gap-1"><i class="fa-solid fa-microscope text-indigo-500"></i> 提取中</span>`;
+      } else if (item.status === 'success') {
+        statusBox.innerHTML = `
+          <button onclick="retryItem('${item.id}')" title="重新识别" class="text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 px-2 py-0.5 rounded transition shadow-sm text-[10px] mr-1">重新识别</button>
+          <span class="text-emerald-600 flex items-center gap-1"><i class="fa-solid fa-check"></i> 成功</span> 
+          ${deleteBtn}`;
+      } else if (item.status === 'error') {
+        statusBox.innerHTML = `<button onclick="retryItem('${item.id}')" class="text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded transition">重试</button>
+                               <div class="relative group/tooltip">
+                                 <span class="text-rose-600 flex items-center gap-1 cursor-help"><i class="fa-solid fa-xmark"></i> 失败</span>
+                                 <div class="absolute right-0 bottom-full mb-1 hidden group-hover/tooltip:block w-48 p-2 bg-slate-800 text-white text-[10px] rounded shadow-lg z-50 break-words">${escapeHtml(item.errorMsg)}</div>
+                               </div>
+                               ${deleteBtn}`;
+      }
+    }
+
+    window.retryItem = async function(id) {
+      const item = filesState.find(f => f.id === id);
+      if (item) {
+        item.status = 'pending'; 
+        item.errorMsg = '';
+        updateQueueItemUI(item); 
+        saveTableData();
+        if (!isProcessing) processQueue();
+      }
+    };
+
+    window.deleteRowItem = async function(id) {
+      filesState = filesState.filter(f => f.id !== id);
+      const el = document.getElementById(`queue_${id}`);
+      if (el) el.remove();
+      if (filesState.length === 0) emptyListTip.classList.remove('hidden');
+      renderTable(); updateUI(); saveTableData();
+      
+      if (db) {
+         const tx = db.transaction('images', 'readwrite');
+         tx.objectStore('images').delete(id);
+      }
+    };
+
+    window.deleteColumn = function(colName) {
+      if (confirm(`确定要删除整列【${colName}】吗？`)) {
+        allColumns = allColumns.filter(c => c !== colName);
+        filesState.forEach(item => { if (item.data && item.data[colName] !== undefined) delete item.data[colName]; });
+        renderTable(); saveTableData();
+      }
+    };
+
+    window.updateItemName = function(id, newName) {
+      const item = filesState.find(f => f.id === id);
+      if (item) {
+        item.customName = newName.trim() || item.customName;
+        const leftInput = document.querySelector(`#queue_${id} .name-input`);
+        if (leftInput) leftInput.value = item.customName;
+        renderTable(); saveTableData();
+      }
+    };
+
+    window.updateCellValue = function(id, col, newValue) {
+      const item = filesState.find(f => f.id === id);
+      if (item && item.data) { item.data[col] = newValue.trim(); saveTableData(); }
+    };
+
+    function renderTable() {
+      const successfulItems = filesState.filter(f => f.status === 'success' && f.data);
+      if (successfulItems.length === 0) {
+        tablePlaceholder.classList.remove('hidden'); dataTable.classList.add('hidden'); return;
+      }
+      tablePlaceholder.classList.add('hidden'); dataTable.classList.remove('hidden');
+
+      tableHead.innerHTML = `<tr>${allColumns.map(col => {
+        if (col === "样本名称") return `<th class="p-2.5 font-semibold text-slate-700 whitespace-nowrap bg-slate-100/80 border-b border-slate-200 z-30">${escapeHtml(col)}</th>`;
+        return `<th class="p-2.5 font-semibold text-slate-700 whitespace-nowrap bg-slate-100/80 border-b border-slate-200 group/th min-w-[120px] z-30">
+          <div class="flex items-center justify-between gap-2">
+            <span>${escapeHtml(col)}</span>
+            <button onclick="deleteColumn('${escapeHtml(col).replace(/'/g, "\\'")}')" class="text-slate-300 hover:text-rose-500 transition opacity-0 group-hover/th:opacity-100"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
+          </div>
+        </th>`;
+      }).join('')}<th class="p-2.5 font-semibold text-slate-500 whitespace-nowrap bg-slate-100/80 border-b border-slate-200 text-center sticky right-0 z-40 w-12 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.05)]">操作</th></tr>`;
+
+      tableBody.innerHTML = successfulItems.map(item => {
+        return `<tr class="hover:bg-indigo-50/40 transition">
+          ${allColumns.map(col => {
+            if (col === "样本名称") return `<td class="p-2 font-sans font-medium text-slate-900 border-b border-slate-100 whitespace-nowrap bg-white/50"><input type="text" value="${escapeHtml(item.customName)}" class="bg-transparent hover:bg-white focus:bg-white px-1.5 py-1 border border-transparent focus:border-indigo-400 rounded outline-none transition w-full" onchange="updateItemName('${item.id}', this.value)"></td>`;
+            const val = item.data[col] !== undefined ? item.data[col] : '';
+            return `<td class="p-2 border-b border-slate-100 whitespace-nowrap"><input type="text" value="${escapeHtml(val)}" class="text-slate-600 bg-transparent hover:bg-white focus:bg-white px-1.5 py-1 border border-transparent focus:border-indigo-400 rounded outline-none transition w-full placeholder:text-slate-300" placeholder="-" onchange="updateCellValue('${item.id}', '${escapeHtml(col).replace(/'/g, "\\'")}', this.value)"></td>`;
+          }).join('')}<td class="p-2 border-b border-slate-100 whitespace-nowrap text-center bg-white/50 sticky right-0 z-10 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.02)]"><button onclick="deleteRowItem('${item.id}')" class="text-slate-300 hover:text-rose-500 transition p-1"><i class="fa-solid fa-xmark"></i></button></td></tr>`;
+      }).join('');
+    }
+
+    exportCsvBtn.addEventListener('click', () => {
+      const successfulItems = filesState.filter(f => f.status === 'success' && f.data);
+      if (!successfulItems.length) return;
+      const headerLine = allColumns.map(c => `"${c.replace(/"/g, '""')}"`).join(',');
+      const rowLines = successfulItems.map(item => {
+        return allColumns.map(col => `"${String(col === "样本名称" ? item.customName : (item.data[col] !== undefined ? item.data[col] : "")).replace(/"/g, '""')}"`).join(',');
+      });
+      const blob = new Blob(["\uFEFF" + [headerLine, ...rowLines].join("\r\n")], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `测量数据提取手动指定版_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    });
+
+    clearAllBtn.addEventListener('click', async () => {
+      if (!filesState.length) return;
+      if (confirm('确认清空所有数据并删除图片缓存吗？')) {
+        filesState = []; 
+        updateColumnsFromInput();
+        fileList.innerHTML = ''; 
+        fileList.appendChild(emptyListTip);
+        emptyListTip.classList.remove('hidden'); 
+        renderTable(); 
+        updateUI();
+        localStorage.removeItem('extracted_data_state_manual');
+        await clearImageCache();
+      }
+    });
+
+    function updateUI() {
+      fileCountBadge.innerText = `${filesState.length} 项`;
+      exportCsvBtn.disabled = !filesState.some(f => f.status === 'success');
+    }
+
+    (async function initApp() {
+      loadApiSettings();
+      await initDB();
+      loadTableData();
+    })();
+  </script>
+</body>
+</html>
