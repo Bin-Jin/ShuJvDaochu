@@ -625,12 +625,12 @@ ${specialNote}
       div.id = `queue_${item.id}`;
       div.className = 'py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl transition-all duration-200 flex items-center justify-between gap-2 sm:gap-3 group/item hover:bg-slate-50 border border-transparent hover:border-slate-100 fade-in-row mt-1';
       div.innerHTML = `
-        <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+        <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-[60px]">
           <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-indigo-50 text-indigo-400 flex items-center justify-center shrink-0">
             <i class="fa-regular fa-image text-[10px] sm:text-xs"></i>
           </div>
           <input type="text" value="${escapeHtml(item.customName)}" title="修改样本名称" 
-                 class="name-input text-[11px] sm:text-xs font-bold text-slate-700 bg-transparent hover:bg-white focus:bg-white px-2 py-1.5 border border-transparent focus:border-indigo-400 rounded-md outline-none truncate w-full transition-all focus:ring-2 focus:ring-indigo-100"
+                 class="name-input text-[11px] sm:text-xs font-bold text-slate-700 bg-transparent hover:bg-white focus:bg-white px-1 sm:px-2 py-1.5 border border-transparent focus:border-indigo-400 rounded-md outline-none w-full transition-all focus:ring-2 focus:ring-indigo-100 min-w-[60px]"
                  onchange="updateItemName('${item.id}', this.value)">
         </div>
         <div class="status-box flex items-center gap-1 sm:gap-2 shrink-0 font-medium"></div>
@@ -720,7 +720,7 @@ ${specialNote}
 
       tableHead.innerHTML = `<tr>${allColumns.map((col, idx) => {
         const headBg = idx % 2 === 1 ? 'bg-slate-200/50' : 'bg-slate-100/90';
-        if (col === "样本名称") return `<th class="px-2 sm:px-4 py-2.5 sm:py-3.5 font-bold text-slate-700 whitespace-nowrap ${headBg} backdrop-blur-sm border-b border-slate-200 border-r border-slate-200/50 z-30 tracking-wide text-[10px] sm:text-xs text-center shadow-[4px_0_8px_-4px_rgba(0,0,0,0.02)]"><span>${escapeHtml(col)}</span></th>`;
+        if (col === "样本名称") return `<th class="px-2 sm:px-4 py-2.5 sm:py-3.5 font-bold text-slate-700 whitespace-nowrap ${headBg} backdrop-blur-sm border-b border-slate-200 border-r border-slate-200/50 z-30 tracking-wide text-[10px] sm:text-xs text-center shadow-[4px_0_8px_-4px_rgba(0,0,0,0.02)] min-w-[100px] sm:min-w-[140px]"><span>${escapeHtml(col)}</span></th>`;
         return `<th class="px-2 sm:px-4 py-2.5 sm:py-3.5 font-bold text-slate-700 whitespace-nowrap ${headBg} backdrop-blur-sm border-b border-slate-200 border-r border-slate-200/50 group/th min-w-[100px] sm:min-w-[130px] z-30 tracking-wide text-[10px] sm:text-xs text-center">
           <div class="flex items-center justify-center gap-1 sm:gap-2 relative">
             <span>${escapeHtml(col)}</span>
@@ -734,7 +734,7 @@ ${specialNote}
         return `<tr class="hover:bg-indigo-50/40 transition-colors fade-in-row group/tr ${rowBg}">
           ${allColumns.map((col, idx) => {
             const cellBg = idx % 2 === 1 ? 'bg-slate-100/50' : 'bg-transparent';
-            if (col === "样本名称") return `<td class="px-1 sm:px-2 py-1 font-sans font-bold text-slate-800 border-b border-slate-100 border-r border-slate-100/50 whitespace-nowrap ${cellBg}"><input type="text" value="${escapeHtml(item.customName)}" class="bg-transparent hover:bg-white focus:bg-white px-1 sm:px-2 py-1.5 sm:py-2 border border-transparent focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 rounded-md sm:rounded-lg outline-none transition-all w-full text-center text-[10px] sm:text-xs" onchange="updateItemName('${item.id}', this.value)"></td>`;
+            if (col === "样本名称") return `<td class="px-1 sm:px-2 py-1 font-sans font-bold text-slate-800 border-b border-slate-100 border-r border-slate-100/50 whitespace-nowrap ${cellBg}"><input type="text" value="${escapeHtml(item.customName)}" class="bg-transparent hover:bg-white focus:bg-white px-1 sm:px-2 py-1.5 sm:py-2 border border-transparent focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 rounded-md sm:rounded-lg outline-none transition-all w-full text-center text-[10px] sm:text-xs min-w-[80px]" onchange="updateItemName('${item.id}', this.value)"></td>`;
             const val = item.data[col] !== undefined ? item.data[col] : '';
             return `<td class="px-1 sm:px-2 py-1 border-b border-slate-100 border-r border-slate-100/50 whitespace-nowrap ${cellBg} transition-colors text-center"><input type="text" value="${escapeHtml(val)}" class="text-slate-600 bg-transparent hover:bg-slate-50 focus:bg-white px-1 sm:px-2 py-1.5 sm:py-2 border border-transparent focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 rounded-md sm:rounded-lg outline-none transition-all w-full placeholder:text-slate-200 text-center text-[10px] sm:text-xs" placeholder="-" onchange="updateCellValue('${item.id}', '${escapeHtml(col).replace(/'/g, "\\'")}', this.value)"></td>`;
           }).join('')}<td class="px-1 sm:px-2 py-1 border-b border-slate-100 whitespace-nowrap text-center sticky right-0 z-10 shadow-[-8px_0_12px_-4px_rgba(0,0,0,0.02)] group-hover/tr:bg-indigo-50/40 transition-colors bg-white"><button onclick="deleteRowItem('${item.id}')" class="w-6 h-6 sm:w-7 sm:h-7 mx-auto flex items-center justify-center rounded-md text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/tr:opacity-100"><i class="fa-solid fa-trash-can text-[10px] sm:text-[11px]"></i></button></td></tr>`;
@@ -775,7 +775,6 @@ ${specialNote}
       exportCsvBtn.disabled = !filesState.some(f => f.status === 'success');
     }
 
-    // 强力安全启动层
     (async function initApp() {
       loadApiSettings();
       try {
