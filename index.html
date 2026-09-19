@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>光合仪数据提取器 - 手动指定指标版</title>
+  <title>光合仪数据提取器 - 记忆修复版</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
@@ -28,9 +28,9 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
       <div>
         <h1 class="text-2xl font-bold flex items-center gap-3 text-slate-900">
-          <i class="fa-solid fa-microscope text-indigo-600"></i> 光合仪数据提取器 <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-normal">手动指定指标版</span>
+          <i class="fa-solid fa-microscope text-indigo-600"></i> 光合仪数据提取器 <span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-normal">记忆修复稳定版</span>
         </h1>
-        <p class="text-sm text-slate-500 mt-1">您可以随时修改下方输入框中的指标，AI 将严格按您的要求定向提取对应数据</p>
+        <p class="text-sm text-slate-500 mt-1">已修复刷新页面导致数据丢失的 Bug，数据进度自动持久化保存</p>
       </div>
       <div class="flex items-center gap-3">
         <button id="clearAllBtn" class="px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 rounded-lg border border-rose-200 transition flex items-center gap-2">
@@ -292,7 +292,7 @@
       if (parsed.length > 0) {
         allColumns = ["样本名称", ...parsed];
         renderTable();
-        saveTableData();
+        // 修复：绝不能在这里调用 saveTableData()，否则页面刚一加载就把历史数据全刷空了！[cite: 20]
       }
     }
 
@@ -305,11 +305,11 @@
       const stateToSave = filesState.map(f => ({
         id: f.id, customName: f.customName, status: f.status, data: f.data, errorMsg: f.errorMsg
       }));
-      localStorage.setItem('extracted_data_state_manual', JSON.stringify(stateToSave));
+      localStorage.setItem('extracted_data_state_manual_v2', JSON.stringify(stateToSave));
     }
 
     function loadTableData() {
-      const savedState = localStorage.getItem('extracted_data_state_manual');
+      const savedState = localStorage.getItem('extracted_data_state_manual_v2');
       if (savedState) {
         filesState = JSON.parse(savedState);
         if (filesState.length > 0) {
@@ -317,6 +317,15 @@
           filesState.forEach(item => {
             if (item.status === 'processing') item.status = 'pending';
             renderQueueItemDOM(item);
+            
+            // 修复：重建可能存在但不在白名单中的动态列
+            if (item.data) {
+              Object.keys(item.data).forEach(k => {
+                if (!allColumns.includes(k) && k !== "样本名称") {
+                  allColumns.push(k);
+                }
+              });
+            }
           });
           renderTable();
           updateUI();
@@ -707,7 +716,7 @@
         emptyListTip.classList.remove('hidden'); 
         renderTable(); 
         updateUI();
-        localStorage.removeItem('extracted_data_state_manual');
+        localStorage.removeItem('extracted_data_state_manual_v2');
         await clearImageCache();
       }
     });
