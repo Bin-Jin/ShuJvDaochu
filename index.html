@@ -3,38 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>光合仪/氮平衡仪 数据提取 - 双模版</title>
+  <title>多功能仪器数据提取工作站</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <!-- 引入现代英文字体提升数据图表质感 -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- 引入专业的 Excel 导出库 SheetJS -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     body { font-family: 'Inter', system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
     
-    /* 极致丝滑的滚动条 (桌面端可见，移动端原生隐藏) */
     ::-webkit-scrollbar { height: 6px; width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; border-radius: 4px; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-    /* 数据行动画 */
     .fade-in-row { animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* 悬浮聚焦发光特效 */
     .input-glow:focus {
       box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
       border-color: #818cf8;
       background-color: #fff;
     }
+
+    /* 🌟 全局双向高光联动追踪样式 */
+    .pair-hover {
+      background-color: #eef2ff !important;
+      box-shadow: inset 0 0 0 1px #818cf8 !important;
+      transition: all 0.15s ease-in-out;
+      border-radius: 0.25rem;
+    }
+    td.pair-hover { border-radius: 0; }
+    tr.pair-hover td:first-child { border-top-left-radius: 0.5rem; border-bottom-left-radius: 0.5rem; }
+    tr.pair-hover td:last-child { border-top-right-radius: 0.5rem; border-bottom-right-radius: 0.5rem; }
   </style>
 </head>
 <body class="bg-slate-50/50 text-slate-800 min-h-screen p-2 sm:p-4 md:p-8 relative selection:bg-indigo-100 selection:text-indigo-900 overflow-x-hidden">
   
-  <!-- 拖拽全局覆盖层 -->
+  <div id="imagePreviewModal" class="fixed inset-0 z-[200] hidden flex-col items-center justify-center bg-slate-900/90 backdrop-blur-md p-4 sm:p-8 transition-opacity" onclick="this.classList.add('hidden'); this.classList.remove('flex');">
+    <button class="absolute top-4 right-4 sm:top-6 sm:right-8 text-white/60 hover:text-white text-3xl sm:text-4xl focus:outline-none transition-colors"><i class="fa-solid fa-xmark"></i></button>
+    <img id="previewImg" src="" class="max-w-full max-h-full rounded-xl shadow-2xl object-contain border-4 border-white/10" onclick="event.stopPropagation()">
+  </div>
+
   <div id="globalDropZone" class="fixed inset-0 z-[100] hidden flex-col items-center justify-center bg-white/90 backdrop-blur-md border-[8px] sm:border-[12px] border-indigo-500/20 m-2 sm:m-4 rounded-[2rem] transition-all duration-300">
     <div class="pointer-events-none flex flex-col items-center scale-90 sm:scale-110">
       <div class="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-full flex items-center justify-center shadow-2xl shadow-indigo-500/40 mb-6 animate-bounce">
@@ -44,24 +58,23 @@
     </div>
   </div>
 
-  <div class="max-w-[1400px] mx-auto space-y-4 sm:space-y-6 md:space-y-8">
+  <div class="max-w-[1500px] mx-auto space-y-4 sm:space-y-6 md:space-y-8">
     
-    <!-- 顶部标题栏 -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-xl p-4 sm:p-6 md:px-8 md:py-6 rounded-2xl md:rounded-3xl shadow-lg shadow-slate-200/40 border border-white relative transition-all">
       <div>
         <h1 class="text-2xl sm:text-3xl font-extrabold flex items-center gap-2 sm:gap-3 tracking-tight flex-wrap">
           <span class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/30 text-white shrink-0">
             <i class="fa-solid fa-microscope text-[14px] sm:text-[18px]"></i>
           </span>
-          <span class="bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">光合仪/氮平衡仪</span> 
+          <span id="header-title" class="bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">光合仪</span> 
           <span class="text-slate-800">数据提取</span>
-          <span class="text-[10px] sm:text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full font-semibold border border-indigo-100">双模版</span>
+          <span class="text-[10px] sm:text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full font-semibold border border-indigo-100">26.9.19最新版</span>
         </h1>
-        <p class="text-xs sm:text-sm text-slate-500 mt-2 font-medium sm:ml-1 leading-relaxed">支持光合仪与氮平衡仪一键切换，科研数据全自动解析对齐</p>
+        <p class="text-xs sm:text-sm text-slate-500 mt-2 font-medium sm:ml-1 leading-relaxed">光合仪与氮平衡仪一键切换，科研数据全自动解析对齐。</p>
       </div>
       <div class="flex items-center gap-3 shrink-0">
         <button id="clearAllBtn" class="w-full sm:w-auto px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
-          <i class="fa-solid fa-fire-burner"></i> 清除数据
+          <i class="fa-solid fa-fire-burner"></i> 清空当前区数据
         </button>
       </div>
     </div>
@@ -86,7 +99,7 @@
           <input type="text" id="apiBaseUrl" class="w-full text-xs sm:text-sm bg-slate-50 px-3 sm:px-4 py-2 sm:py-2.5 border border-slate-200 rounded-xl input-glow outline-none transition-all text-slate-700 font-mono">
         </div>
         <div>
-          <label class="block text-[10px] sm:text-xs font-semibold text-slate-500 mb-1 sm:mb-1.5 uppercase tracking-wider">视觉模型 (Vision Model)</label>
+          <label class="block text-[10px] sm:text-xs font-semibold text-slate-500 mb-1 sm:mb-1.5 uppercase tracking-wider">视觉模型 (Model)</label>
           <input type="text" id="apiModel" class="w-full text-xs sm:text-sm bg-indigo-50/50 px-3 sm:px-4 py-2 sm:py-2.5 border border-indigo-100 rounded-xl input-glow outline-none transition-all font-bold text-indigo-700 font-mono">
         </div>
         <div>
@@ -99,44 +112,40 @@
         <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <span>🎯 提取指标名称 <span class="text-slate-400 font-normal text-[10px] sm:text-xs sm:ml-2">（AI 将严格按此列表抓取数据）</span></span>
           
-          <!-- 核心新增：多仪器预设按键 -->
-          <div class="flex items-center gap-2 self-start sm:self-auto">
-            <button type="button" onclick="setInstrument('PAM')" class="text-indigo-600 hover:text-indigo-800 transition-colors text-[10px] sm:text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg border border-indigo-100 flex items-center gap-1.5 shadow-sm">
-              <i class="fa-brands fa-pagelines"></i> 光合仪
+          <div class="flex items-center gap-2 self-start sm:self-auto bg-slate-100 p-1 rounded-xl border border-slate-200">
+            <button id="btn-PAM" type="button" onclick="setInstrument('PAM')" class="text-indigo-700 font-bold bg-white px-3 py-1.5 rounded-lg shadow-sm border border-slate-200 flex items-center gap-1.5 transition-all text-[10px] sm:text-xs">
+              <i class="fa-brands fa-pagelines"></i> 🌿 光合仪区
             </button>
-            <button type="button" onclick="setInstrument('NBI')" class="text-emerald-600 hover:text-emerald-800 transition-colors text-[10px] sm:text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-100 flex items-center gap-1.5 shadow-sm">
-              <i class="fa-solid fa-leaf"></i> 氮平衡仪
+            <button id="btn-NBI" type="button" onclick="setInstrument('NBI')" class="text-slate-500 hover:text-emerald-700 font-medium bg-transparent px-3 py-1.5 rounded-lg border border-transparent flex items-center gap-1.5 transition-all text-[10px] sm:text-xs">
+              <i class="fa-solid fa-leaf"></i> 🌱 氮平衡仪区
             </button>
           </div>
         </label>
-        <textarea id="targetHeadersInput" rows="3" class="w-full text-[11px] sm:text-sm font-mono leading-relaxed px-3 sm:px-4 py-2 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl input-glow outline-none transition-all text-slate-700" placeholder="点击右上角按钮快速载入，或手动输入（逗号隔开）..."></textarea>
+        <textarea id="targetHeadersInput" rows="2" class="w-full text-[11px] sm:text-sm font-mono leading-relaxed px-3 sm:px-4 py-2 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl input-glow outline-none transition-all text-slate-700" placeholder="点击右上角按钮快速载入，或手动输入（逗号隔开）..."></textarea>
       </div>
     </div>
 
-    <!-- 工作区 -->
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 relative">
-      <!-- 左侧：上传区与队列 -->
-      <div class="space-y-4 sm:space-y-6 flex flex-col lg:sticky lg:top-[20px] lg:h-[calc(100vh-40px)] lg:self-start lg:col-span-1">
-        
-        <!-- 大按钮式上传区 -->
+    <!-- 左侧上传与右侧表格布局 -->
+    <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8 relative">
+      
+      <div class="space-y-4 sm:space-y-6 flex flex-col w-full lg:w-[320px] xl:w-[380px] shrink-0 lg:sticky lg:top-[20px] lg:h-[calc(100vh-40px)] lg:self-start">
         <div id="clickUploadZone" class="bg-gradient-to-b from-indigo-50 to-white border-2 border-dashed border-indigo-200 hover:border-indigo-400 transition-all duration-300 py-6 sm:py-8 rounded-2xl sm:rounded-3xl flex flex-col items-center justify-center text-center cursor-pointer relative overflow-hidden group shadow-sm hover:shadow-md hover:shadow-indigo-500/10 active:scale-[0.98]">
           <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
           <div class="w-12 h-12 sm:w-14 sm:h-14 bg-white text-indigo-600 rounded-2xl flex items-center justify-center text-xl sm:text-2xl mb-3 sm:mb-4 shadow-md shadow-slate-200 border border-slate-100 transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-110">
             <i class="fa-solid fa-arrow-up-from-bracket"></i>
           </div>
           <h3 class="font-bold text-slate-700 text-sm sm:text-base mb-1">导入图表文件</h3>
-          <p class="text-slate-400 text-[10px] sm:text-xs font-medium px-4">点击浏览或将图片拖拽至此</p>
+          <p class="text-slate-400 text-[10px] sm:text-xs font-medium px-4">支持批量导入及长截图解析</p>
         </div>
 
-        <!-- 队列列表 (移动端限制高度，防止把表格挤到屏幕最下方) -->
-        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/30 p-4 sm:p-5 flex flex-col flex-1 min-h-[150px] max-h-[35vh] lg:max-h-none lg:min-h-[300px] overflow-hidden">
+        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/30 p-4 sm:p-5 flex flex-col flex-1 min-h-[200px] max-h-[40vh] lg:max-h-none lg:min-h-[300px] overflow-hidden">
           <div class="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-100 shrink-0">
             <span class="text-xs sm:text-sm font-bold text-slate-800 flex items-center gap-2">
               <i class="fa-solid fa-list-check text-slate-400"></i> 解析列队
             </span>
             <span id="fileCountBadge" class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 sm:px-2.5 sm:py-1 bg-slate-100 text-slate-600 rounded-full tracking-wider">0 项</span>
           </div>
-          <div id="fileList" class="divide-y divide-slate-50 flex-1 overflow-y-auto mt-2 pb-2 pr-1 sm:pr-2 -mr-1 sm:-mr-2 space-y-1">
+          <div id="fileList" class="divide-y divide-slate-50 flex-1 overflow-y-auto mt-2 pb-2 pr-1 space-y-1">
             <div id="emptyListTip" class="h-full flex flex-col items-center justify-center text-slate-300 gap-2 sm:gap-3 opacity-60 py-4">
               <i class="fa-regular fa-folder-open text-3xl sm:text-4xl"></i>
               <p class="text-[10px] sm:text-xs font-medium">暂无待处理文件</p>
@@ -145,24 +154,21 @@
         </div>
       </div>
 
-      <!-- 右侧：数据表格区 -->
-      <div class="lg:col-span-3 flex flex-col min-h-[500px] h-[60vh] lg:h-[calc(100vh-40px)]">
+      <div class="flex-1 min-w-0 flex flex-col min-h-[500px] h-[60vh] lg:h-[calc(100vh-40px)]">
         <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/40 p-4 sm:p-6 flex flex-col h-full relative overflow-hidden">
           
-          <!-- 表格头部操作区 -->
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-5 shrink-0">
             <div>
-              <h2 class="font-extrabold text-slate-800 text-lg sm:text-xl tracking-tight">结构化数据矩阵</h2>
-              <p class="text-[10px] sm:text-xs text-slate-500 mt-1 font-medium">已自动去重并对齐。点击任何单元格即可修改。</p>
+              <h2 class="font-extrabold text-slate-800 text-lg sm:text-xl tracking-tight">结构化数据表格</h2>
+              <p class="text-[10px] sm:text-xs text-slate-500 mt-1 font-medium">悬停任意行可触发全局高光追踪，点击队列缩略图可查看大图。</p>
             </div>
+            <!-- 原生 XLSX 导出按钮 -->
             <button id="exportCsvBtn" disabled class="w-full sm:w-auto px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-bold rounded-xl shadow-md shadow-emerald-500/20 transition-all duration-300 hover:shadow-emerald-500/40 sm:hover:-translate-y-0.5 flex items-center justify-center gap-2 shrink-0 border border-emerald-400/50">
-              <i class="fa-solid fa-download"></i> 导出 CSV
+              <i class="fa-regular fa-file-excel"></i> 导出 Excel (XLSX)
             </button>
           </div>
 
-          <!-- 表格核心渲染区 -->
           <div class="flex-1 overflow-auto rounded-xl sm:rounded-2xl border border-slate-200/60 bg-slate-50/30 relative shadow-inner" id="tableWrapper">
-            <!-- 占位状态 -->
             <div id="tablePlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 z-10 bg-white/50 backdrop-blur-sm transition-opacity">
               <div class="w-12 h-12 sm:w-16 sm:h-16 bg-slate-100 rounded-xl sm:rounded-2xl flex items-center justify-center mb-3 sm:mb-4">
                 <i class="fa-solid fa-table-list text-2xl sm:text-3xl text-slate-300"></i>
@@ -170,10 +176,9 @@
               <p class="text-xs sm:text-sm font-medium">数据表将在此处生成</p>
             </div>
             
-            <!-- 表格本体: 全局居中 -->
-            <table id="dataTable" class="w-full text-[10px] sm:text-xs text-center border-collapse hidden relative">
+            <table id="dataTable" class="w-full text-[10px] sm:text-xs text-center border-collapse hidden relative select-none">
               <thead id="tableHead" class="bg-slate-100/95 backdrop-blur-md text-slate-600 sticky top-0 z-20 shadow-sm border-b-2 border-slate-200"></thead>
-              <tbody id="tableBody" class="divide-y divide-slate-100 font-mono text-slate-700 bg-white"></tbody>
+              <tbody id="tableBody" class="divide-y divide-slate-100 font-mono text-slate-700 bg-white relative"></tbody>
             </table>
           </div>
         </div>
@@ -191,9 +196,11 @@
            .replace(/'/g, "&#039;");
     }
 
-    const DB_NAME = 'ImageCacheDB_MultiDevice';
+    const DB_NAME = 'ImageCacheDB_NoFlash';
     const DB_VERSION = 1;
     let db;
+
+    let currentMode = localStorage.getItem('active_instrument_mode') || 'PAM';
 
     function initDB() {
       return new Promise((resolve, reject) => {
@@ -243,8 +250,8 @@
         const index = store.index('timestamp');
         const countReq = store.count();
         countReq.onsuccess = () => {
-          if (countReq.result > 50) {
-            let toDelete = countReq.result - 50;
+          if (countReq.result > 200) {
+            let toDelete = countReq.result - 100;
             index.openCursor().onsuccess = (e) => {
               const cursor = e.target.result;
               if (cursor && toDelete > 0) {
@@ -275,7 +282,6 @@
     let allColumns = ["样本名称"];
     let isProcessing = false;
 
-    // 🌟 定义两种仪器的默认指标库
     const PAM_HEADERS = "protocol_id, Ambient Humidity, Ambient Pressure, Ambient Temperature, Chamber Temperature, ECS_tau, ECSt mAU, FmPrime, FoPrime, Fs, Fv over FmP, LEF, Leaf Temperature, Leaf Temperature Differenial, Light Intensity PAR, NPQt, P700 DIRK ampl, PS1 Active Centers, PS1 Open Centers, PS1 Over Reduced Centers, PS1 Oxidized Centers, Phi2, PhiNO, PhiNPQ, SPAD, gH+, kP700, leaf angle, leaf_thickness, pump, qL, tP700, test_data_raw_PAM, vH+, v_initial_P700";
     const NBI_HEADERS = "NBI, Chl, Flav";
 
@@ -309,23 +315,48 @@
       saveApiSettings();
     }
 
-    // 🌟 一键切换仪器目标库
-    window.setInstrument = function(type) {
-      if (type === 'PAM') {
-        targetHeadersInput.value = PAM_HEADERS;
-      } else if (type === 'NBI') {
-        targetHeadersInput.value = NBI_HEADERS;
+    function updateModeUI() {
+      const btnPAM = document.getElementById('btn-PAM');
+      const btnNBI = document.getElementById('btn-NBI');
+      const title = document.getElementById('header-title');
+
+      if (currentMode === 'PAM') {
+          btnPAM.className = "text-indigo-700 font-bold bg-white px-3 py-1.5 rounded-lg shadow-sm border border-slate-200 flex items-center gap-1.5 transition-all text-[10px] sm:text-xs";
+          btnNBI.className = "text-slate-500 hover:text-emerald-700 font-medium bg-transparent px-3 py-1.5 rounded-lg border border-transparent flex items-center gap-1.5 transition-all text-[10px] sm:text-xs";
+          title.innerText = "光合仪";
+      } else {
+          btnNBI.className = "text-emerald-700 font-bold bg-white px-3 py-1.5 rounded-lg shadow-sm border border-slate-200 flex items-center gap-1.5 transition-all text-[10px] sm:text-xs";
+          btnPAM.className = "text-slate-500 hover:text-indigo-700 font-medium bg-transparent px-3 py-1.5 rounded-lg border border-transparent flex items-center gap-1.5 transition-all text-[10px] sm:text-xs";
+          title.innerText = "氮平衡仪";
       }
+    }
+
+    window.setInstrument = function(mode) {
+      if (currentMode === mode) return; 
+
+      saveTableData();
       saveApiSettings();
+
+      currentMode = mode;
+      localStorage.setItem('active_instrument_mode', currentMode);
+      
+      updateModeUI();
+      loadApiSettings();
+      filesState = []; 
+      loadTableData(); 
     };
+
+    function getStorageKey() { return `extracted_data_state_${currentMode}_NoFlash`; }
+    function getHeadersKey() { return `user_target_headers_${currentMode}_NoFlash`; }
 
     function loadApiSettings() {
       document.getElementById('apiBaseUrl').value = localStorage.getItem('api_base_url') || 'https://generativelanguage.googleapis.com/v1beta/openai';
       document.getElementById('apiModel').value = localStorage.getItem('api_model') || 'gemini-1.5-flash';
       document.getElementById('apiKey').value = localStorage.getItem('api_key') || '';
       
-      const savedHeaders = localStorage.getItem('user_target_headers_multidevice');
-      targetHeadersInput.value = savedHeaders || PAM_HEADERS;
+      const defaultHeaders = currentMode === 'PAM' ? PAM_HEADERS : NBI_HEADERS;
+      const savedHeaders = localStorage.getItem(getHeadersKey());
+      targetHeadersInput.value = savedHeaders || defaultHeaders;
       
       updateColumnsFromInput();
     }
@@ -334,7 +365,7 @@
       localStorage.setItem('api_base_url', document.getElementById('apiBaseUrl').value.trim());
       localStorage.setItem('api_model', document.getElementById('apiModel').value.trim());
       localStorage.setItem('api_key', document.getElementById('apiKey').value.trim());
-      localStorage.setItem('user_target_headers_multidevice', targetHeadersInput.value.trim());
+      localStorage.setItem(getHeadersKey(), targetHeadersInput.value.trim());
       updateColumnsFromInput();
     }
 
@@ -354,13 +385,15 @@
 
     function saveTableData() {
       const stateToSave = filesState.map(f => ({
-        id: f.id, customName: f.customName, status: f.status, data: f.data, errorMsg: f.errorMsg
+        id: f.id, customName: f.customName, status: f.status, data: f.data, errorMsg: f.errorMsg, thumb: f.thumb
       }));
-      localStorage.setItem('extracted_data_state_multidevice', JSON.stringify(stateToSave));
+      localStorage.setItem(getStorageKey(), JSON.stringify(stateToSave));
     }
 
     function loadTableData() {
-      const savedState = localStorage.getItem('extracted_data_state_multidevice');
+      const savedState = localStorage.getItem(getStorageKey());
+      fileList.innerHTML = '';
+      filesState = [];
       if (savedState) {
         filesState = JSON.parse(savedState);
         if (filesState.length > 0) {
@@ -369,12 +402,18 @@
             if (item.status === 'processing') item.status = 'pending';
             renderQueueItemDOM(item);
           });
-          renderTable();
-          updateUI();
-          if (filesState.some(f => f.status === 'pending') && !isProcessing) {
-              processQueue();
-          }
+        } else {
+          fileList.appendChild(emptyListTip);
+          emptyListTip.classList.remove('hidden');
         }
+      } else {
+        fileList.appendChild(emptyListTip);
+        emptyListTip.classList.remove('hidden');
+      }
+      renderTable();
+      updateUI();
+      if (filesState.some(f => f.status === 'pending') && !isProcessing) {
+          processQueue();
       }
     }
 
@@ -411,23 +450,29 @@
       fileInput.value = '';
     });
 
-    async function handleNewFiles(files) {
-      const apiKey = document.getElementById('apiKey').value.trim();
-      if (!apiKey) { alert('请先在上方填入 API 密钥！'); return; }
-      
-      for (const file of Array.from(files)) {
-        if (!file.type.startsWith('image/')) continue;
-        const fileId = 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
-        const item = { id: fileId, customName: file.name.replace(/\.[^/.]+$/, ""), status: 'pending', data: null, file: file, errorMsg: '' };
-        filesState.push(item);
-        renderQueueItemDOM(item);
-        setTimeout(() => fileList.scrollTop = fileList.scrollHeight, 50);
-      }
-      saveTableData();
-      updateUI();
-      if (!isProcessing) processQueue();
+    function createThumbnail(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX = 120; 
+            let w = img.width, h = img.height;
+            if (w > h && w > MAX) { h *= MAX / w; w = MAX; }
+            else if (h > MAX) { w *= MAX / h; h = MAX; }
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.6));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
     }
 
+    // 🌟 4K 原生图片无损提取引擎
     function compressImageToBase64(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -438,7 +483,7 @@
           img.onload = () => {
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
-            const MAX_SIZE = 1200;
+            const MAX_SIZE = 4096; // 核心 4K 高清防糊设定
             let width = img.width;
             let height = img.height;
             if (width > height && width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } 
@@ -448,12 +493,38 @@
             ctx.fillStyle = '#FFFFFF';
             ctx.fillRect(0, 0, width, height);
             ctx.drawImage(img, 0, 0, width, height);
-            resolve(canvas.toDataURL('image/jpeg', 0.8));
+            resolve(canvas.toDataURL('image/jpeg', 0.95)); // 0.95 画质保证
           };
           img.onerror = reject;
         };
         reader.onerror = reject;
       });
+    }
+
+    // 🌟 真正解决图片入库失效：使用完全异步后台强制落库机制
+    async function handleNewFiles(files) {
+      const apiKey = document.getElementById('apiKey').value.trim();
+      if (!apiKey) { alert('请先在上方填入 API 密钥！'); return; }
+      
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith('image/')) continue;
+        
+        const thumbBase64 = await createThumbnail(file); 
+        const fileId = 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+        
+        const item = { id: fileId, customName: file.name.replace(/\.[^/.]+$/, ""), status: 'pending', data: null, errorMsg: '', thumb: thumbBase64 };
+        filesState.push(item);
+        renderQueueItemDOM(item);
+        setTimeout(() => fileList.scrollTop = fileList.scrollHeight, 50);
+
+        // 使用火线后台处理，不等待，直接把 4K 大图锁死进 IndexedDB
+        compressImageToBase64(file).then(base64 => {
+            saveImageToCache(fileId, base64);
+        }).catch(e => console.error('图片落库失败', e));
+      }
+      saveTableData();
+      updateUI();
+      if (!isProcessing) processQueue();
     }
 
     const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -463,12 +534,10 @@
       return raw.map(h => h.trim()).filter(Boolean);
     }
 
-    // 智能映射：光合仪容错及通用对齐
     function mapKeyToTarget(rawKey, targets) {
       let key = (rawKey || '').trim();
       let lower = key.toLowerCase().replace(/[_]+/g, ' ').replace(/\s+/g, ' ');
 
-      // 如果目标包含光合仪特有温差，启用强力容错
       const hasDiffTarget = targets.some(t => t.toLowerCase().includes('differen'));
       if (hasDiffTarget && (lower.includes('leaf temperature differen') || lower.includes('differential'))) {
         for (const t of targets) {
@@ -493,16 +562,17 @@
         updateQueueItemUI(pendingItem);
         
         try {
+          // 轮询机制：防止刚刚上传瞬间，高清原图还没来得及转码存入数据库
           let base64 = await getImageFromCache(pendingItem.id);
-          
+          let retryCount = 0;
+          while (!base64 && retryCount < 10) {
+              await sleep(500);
+              base64 = await getImageFromCache(pendingItem.id);
+              retryCount++;
+          }
+
           if (!base64) {
-            if (pendingItem.file) {
-              base64 = await compressImageToBase64(pendingItem.file);
-              await saveImageToCache(pendingItem.id, base64);
-              await pruneImageCache();
-            } else {
-              throw new Error('原图缓存已过期，请再次导入图片（部署后跨域无法提取本地图片）');
-            }
+            throw new Error('原图缓存已丢失，请删除本条并重新拖入图片。');
           }
 
           const rawEntries = await callVisionApiEntries(base64);
@@ -557,26 +627,25 @@
       const targets = getTargetHeaders();
       const targetsStr = targets.join(', ').toLowerCase();
       
-      // 🌟 根据选择的仪器，动态装载强调提示词
       let specialNote = "";
-      if (targetsStr.includes("differenial") || targetsStr.includes("differential")) {
-        specialNote = `\n【⚠️ 温差字段特殊提醒】：\n图片中包含有 "Leaf Temperature Differenial"（温差行，屏幕拼写可能为 Differenial 或 Differential），绝对不能漏掉！必须将其数值准确提取出来。`;
-      } else if (targetsStr.includes("nbi") && targetsStr.includes("chl")) {
-        specialNote = `\n【⚠️ 氮平衡仪提取提醒】：\n图片为氮平衡仪(Dualex/Force-A)屏幕，请重点准确提取 NBI, Chl, Flav 三个关键指标的数值。`;
+      if (currentMode === 'PAM') {
+        specialNote = `\n【⚠️ 必填提取重点】：\n1. "protocol_id"（通常在屏幕顶部，纯数字ID），请务必优先全图扫描提取！\n2. "Leaf Temperature Differenial" (屏幕拼写可能少t)，绝对不能漏掉！`;
+      } else if (currentMode === 'NBI') {
+        specialNote = `\n【⚠️ 氮平衡仪强制提取规则 (极其重要)】：\n图片为氮平衡仪屏幕，分为左右两列。左侧为指标(NBI, Chl, Flav)，右侧为系统参数(如 grp 1, mes 29, sup)。\n你【必须彻底无视右侧】的所有内容！绝对只提取左侧的 3 个纯数值！\n\n正确的返回格式必须是：\n{\n  "NBI": "57.9",\n  "Chl": "35.9",\n  "Flav": "0.62"\n}`;
       }
 
-      const systemPrompt = `你是一个精密的科学仪器屏幕数据提取助手。请仔细观察图片，重点提取以下【用户指定的指标列表】中的数值：
+      const systemPrompt = `你是一个精密的科学仪器数据提取系统。请仔细观察图片，提取以下【目标指标列表】中的数值：
 [${targets.join(', ')}]
 ${specialNote}
 
-规则：
-1. 请从上到下完整扫描图片每一行，将上述列表中的指标完整提取出来。
-2. 请以 JSON 数组对象形式返回，格式如：
-[
-  {"key": "protocol_id", "value": "3357"},
-  {"key": "Leaf Temperature Differenial", "value": "-5.35"}
-]
-3. 严禁省略中间的数据，不允许出现 "..."。只返回纯 JSON 数组，不要有多余的 markdown 标记。`;
+强制执行规则：
+1. 请确保列表中的每一个指标只要在图中出现，就必须提取，不得遗漏！只输出纯数字（包含小数点或负号），不要带单位。
+2. 【红线警告】：绝对、永远、禁止输出任何形式的代码注释（如 // 或 /* */），绝对不要有任何多余的废话和标记！
+3. 直接输出纯净的 JSON 字典。
+返回格式如：
+{
+  "${targets[0] || 'protocol_id'}": "123.45"
+}`;
 
       const response = await fetch(baseUrl, {
         method: 'POST',
@@ -611,29 +680,116 @@ ${specialNote}
       const res = await response.json();
       let rawText = res.choices?.[0]?.message?.content || '[]';
       
-      const match = rawText.match(/\[[\s\S]*\]/);
-      if (match) rawText = match[0];
-      else throw new Error("AI 返回格式异常，未能提取到 JSON 数组数据");
+      let finalEntries = [];
       
-      const parsedArray = JSON.parse(rawText);
-      return parsedArray.map(item => [item.key, item.value]);
+      function extractPairs(obj) {
+        if (typeof obj !== 'object' || obj === null) return;
+        if (obj.key !== undefined && obj.value !== undefined) {
+           finalEntries.push([String(obj.key), String(obj.value)]);
+        } else {
+           for (let k in obj) {
+               finalEntries.push([String(k), String(obj[k])]);
+           }
+        }
+      }
+
+      let parsedData = null;
+      try {
+        let cleanText = rawText.replace(/```json/gi, '').replace(/```/g, '');
+        cleanText = cleanText.replace(/\/\/.*$/gm, '').trim(); 
+        
+        const arrMatch = cleanText.match(/\[[\s\S]*\]/);
+        const objMatch = cleanText.match(/\{[\s\S]*\}/);
+        
+        if (arrMatch) {
+            parsedData = JSON.parse(arrMatch[0]);
+        } else if (objMatch) {
+            parsedData = JSON.parse(objMatch[0]);
+        }
+      } catch (e) {
+         console.warn("标准 JSON 解析遇阻，已自动激活底层正则刮取引擎...");
+      }
+
+      if (parsedData) {
+         if (Array.isArray(parsedData)) {
+            parsedData.forEach(item => extractPairs(item));
+         } else {
+            extractPairs(parsedData);
+         }
+      }
+
+      // 如果数据损坏，启用终极强取
+      if (finalEntries.length === 0) {
+         const regexKV = /"key"\s*:\s*"([^"]+)"\s*,\s*"value"\s*:\s*"?([^"}\s,\]]+)"?/gi;
+         let regMatch;
+         let matched = false;
+         while ((regMatch = regexKV.exec(rawText)) !== null) {
+            finalEntries.push([regMatch[1], regMatch[2]]);
+            matched = true;
+         }
+         if (!matched) {
+            const regexDict = /"([^"]+)"\s*:\s*"?([^"}\s,\]]+)"?/gi;
+            while ((regMatch = regexDict.exec(rawText)) !== null) {
+               if (regMatch[1].toLowerCase() === "key" || regMatch[1].toLowerCase() === "value") continue; 
+               finalEntries.push([regMatch[1], regMatch[2]]);
+            }
+         }
+      }
+
+      if (finalEntries.length === 0) {
+         throw new Error("AI 数据格式严重损坏，且强制还原失败。");
+      }
+
+      return finalEntries;
     }
+
+    // 🌟 全局联动追踪
+    window.highlightPair = function(id, isHover) {
+      const row = document.getElementById(`row_${id}`);
+      const queue = document.getElementById(`queue_${id}`);
+      if(isHover) {
+          if(row) row.classList.add('pair-hover');
+          if(queue) queue.classList.add('pair-hover');
+      } else {
+          if(row) row.classList.remove('pair-hover');
+          if(queue) queue.classList.remove('pair-hover');
+      }
+    };
+
+    window.previewImage = async function(id) {
+        const base64 = await getImageFromCache(id);
+        if(base64) {
+            document.getElementById('previewImg').src = base64;
+            const modal = document.getElementById('imagePreviewModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        } else {
+            alert('原图缓存已清理或失效，无法预览大图。');
+        }
+    };
 
     function renderQueueItemDOM(item) {
       emptyListTip.classList.add('hidden');
       const div = document.createElement('div');
       div.id = `queue_${item.id}`;
-      div.className = 'py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl transition-all duration-200 flex items-center justify-between gap-2 sm:gap-3 group/item hover:bg-slate-50 border border-transparent hover:border-slate-100 fade-in-row mt-1';
+      div.setAttribute('onmouseenter', `highlightPair('${item.id}', true)`);
+      div.setAttribute('onmouseleave', `highlightPair('${item.id}', false)`);
+      div.className = 'py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl transition-all duration-200 flex items-center justify-between gap-1.5 sm:gap-2 group/item hover:bg-slate-50 border border-transparent hover:border-slate-100 fade-in-row mt-1';
+      
+      const imgHtml = item.thumb 
+        ? `<img src="${item.thumb}" class="w-7 h-7 sm:w-8 sm:h-8 rounded-md object-cover cursor-zoom-in hover:opacity-80 border border-slate-200 shadow-sm shrink-0 transition-opacity" onclick="previewImage('${item.id}')" title="点击预览原图" alt="缩略图">`
+        : `<div onclick="previewImage('${item.id}')" class="w-7 h-7 sm:w-8 sm:h-8 rounded-md bg-indigo-50 text-indigo-400 flex items-center justify-center shrink-0 cursor-zoom-in hover:opacity-80 transition-opacity" title="点击预览原图"><i class="fa-regular fa-image text-[10px] sm:text-xs"></i></div>`;
+
       div.innerHTML = `
-        <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-[60px]">
-          <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-indigo-50 text-indigo-400 flex items-center justify-center shrink-0">
-            <i class="fa-regular fa-image text-[10px] sm:text-xs"></i>
+        <div class="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 pr-1">
+          ${imgHtml}
+          <div class="flex-1 min-w-0">
+            <input type="text" value="${escapeHtml(item.customName)}" title="${escapeHtml(item.customName)}" 
+                   class="name-input text-[11px] sm:text-xs font-bold text-slate-700 bg-transparent hover:bg-white focus:bg-white px-1 sm:px-2 py-1.5 border border-transparent focus:border-indigo-400 rounded-md outline-none w-full transition-all focus:ring-1 focus:ring-indigo-100 truncate"
+                   onchange="updateItemName('${item.id}', this.value)">
           </div>
-          <input type="text" value="${escapeHtml(item.customName)}" title="修改样本名称" 
-                 class="name-input text-[11px] sm:text-xs font-bold text-slate-700 bg-transparent hover:bg-white focus:bg-white px-1 sm:px-2 py-1.5 border border-transparent focus:border-indigo-400 rounded-md outline-none w-full transition-all focus:ring-2 focus:ring-indigo-100 min-w-[60px]"
-                 onchange="updateItemName('${item.id}', this.value)">
         </div>
-        <div class="status-box flex items-center gap-1 sm:gap-2 shrink-0 font-medium"></div>
+        <div class="status-box flex items-center gap-1 sm:gap-2 shrink-0 font-medium ml-1"></div>
       `;
       fileList.appendChild(div);
       updateQueueItemUI(item);
@@ -646,18 +802,18 @@ ${specialNote}
       const deleteBtn = `<button onclick="deleteRowItem('${item.id}')" title="删除记录" class="w-6 h-6 sm:w-7 sm:h-7 rounded-md flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/item:opacity-100"><i class="fa-solid fa-trash-can"></i></button>`;
 
       if (item.status === 'pending') {
-        statusBox.innerHTML = `<span class="text-[10px] sm:text-xs text-slate-400 flex items-center gap-1 sm:gap-1.5"><i class="fa-solid fa-spinner fa-spin text-indigo-400"></i> 排队中</span> ${deleteBtn}`;
+        statusBox.innerHTML = `<span class="text-[10px] sm:text-xs text-slate-400 flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin text-indigo-400"></i> 排队中</span> ${deleteBtn}`;
       } else if (item.status === 'processing') {
-        statusBox.innerHTML = `<span class="text-[10px] sm:text-xs text-indigo-600 flex items-center gap-1 sm:gap-1.5 bg-indigo-50 px-2 py-1 rounded-md"><i class="fa-solid fa-microscope text-indigo-500 animate-pulse"></i> 提取中</span>`;
+        statusBox.innerHTML = `<span class="text-[10px] sm:text-xs text-indigo-600 flex items-center gap-1 bg-indigo-50 px-1.5 py-1 rounded-md"><i class="fa-solid fa-microscope text-indigo-500 animate-pulse"></i> 提取中</span>`;
       } else if (item.status === 'success') {
         statusBox.innerHTML = `
-          <button onclick="retryItem('${item.id}')" title="重新识别" class="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-100 px-1.5 sm:px-2 py-1 rounded transition-all text-[9px] sm:text-[10px] mr-0.5 sm:mr-1 font-semibold flex items-center gap-1 opacity-0 group-hover/item:opacity-100"><i class="fa-solid fa-rotate-right"></i> 重试</button>
-          <span class="text-[10px] sm:text-xs text-emerald-600 flex items-center gap-1 sm:gap-1.5 bg-emerald-50 px-2 py-1 rounded-md"><i class="fa-solid fa-check text-emerald-500"></i> 成功</span> 
+          <button onclick="retryItem('${item.id}')" title="重新识别" class="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-100 px-1 py-1 rounded transition-all text-[10px] font-semibold flex items-center gap-1 opacity-0 group-hover/item:opacity-100"><i class="fa-solid fa-rotate-right"></i> 重试</button>
+          <span class="text-[10px] sm:text-xs text-emerald-600 flex items-center gap-1 bg-emerald-50 px-1.5 py-1 rounded-md"><i class="fa-solid fa-check text-emerald-500"></i> 成功</span> 
           ${deleteBtn}`;
       } else if (item.status === 'error') {
-        statusBox.innerHTML = `<button onclick="retryItem('${item.id}')" class="text-indigo-600 hover:text-white hover:bg-indigo-500 border border-indigo-200 px-1.5 sm:px-2 py-1 rounded transition-all mr-0.5 sm:mr-1 shadow-sm text-[10px]">重试</button>
+        statusBox.innerHTML = `<button onclick="retryItem('${item.id}')" class="text-indigo-600 hover:text-white hover:bg-indigo-500 border border-indigo-200 px-1 py-1 rounded transition-all shadow-sm text-[10px]">重试</button>
                                <div class="relative group/tooltip">
-                                 <span class="text-[10px] sm:text-xs text-rose-600 flex items-center gap-1 sm:gap-1.5 cursor-help bg-rose-50 px-2 py-1 rounded-md"><i class="fa-solid fa-triangle-exclamation"></i> 失败</span>
+                                 <span class="text-[10px] sm:text-xs text-rose-600 flex items-center gap-1 cursor-help bg-rose-50 px-1.5 py-1 rounded-md"><i class="fa-solid fa-triangle-exclamation"></i> 失败</span>
                                  <div class="absolute right-0 bottom-full mb-2 hidden group-hover/tooltip:block w-48 sm:w-56 p-2 sm:p-2.5 bg-slate-800 text-white text-[10px] sm:text-[11px] leading-relaxed rounded-lg shadow-xl z-50 break-words font-normal">${escapeHtml(item.errorMsg)}</div>
                                </div>
                                ${deleteBtn}`;
@@ -701,7 +857,10 @@ ${specialNote}
       if (item) {
         item.customName = newName.trim() || item.customName;
         const leftInput = document.querySelector(`#queue_${id} .name-input`);
-        if (leftInput) leftInput.value = item.customName;
+        if (leftInput && document.activeElement !== leftInput) {
+           leftInput.value = item.customName;
+           leftInput.title = item.customName;
+        }
         renderTable(); saveTableData();
       }
     };
@@ -711,6 +870,7 @@ ${specialNote}
       if (item && item.data) { item.data[col] = newValue.trim(); saveTableData(); }
     };
 
+    // 🌟 无感刷新表格引擎 (DOM Diffing)
     function renderTable() {
       const successfulItems = filesState.filter(f => f.status === 'success' && f.data);
       if (successfulItems.length === 0) {
@@ -718,46 +878,105 @@ ${specialNote}
       }
       tablePlaceholder.classList.add('hidden'); dataTable.classList.remove('hidden');
 
-      tableHead.innerHTML = `<tr>${allColumns.map((col, idx) => {
+      let headHtml = `<tr>`;
+      allColumns.forEach((col, idx) => {
         const headBg = idx % 2 === 1 ? 'bg-slate-200/50' : 'bg-slate-100/90';
-        if (col === "样本名称") return `<th class="px-2 sm:px-4 py-2.5 sm:py-3.5 font-bold text-slate-700 whitespace-nowrap ${headBg} backdrop-blur-sm border-b border-slate-200 border-r border-slate-200/50 z-30 tracking-wide text-[10px] sm:text-xs text-center shadow-[4px_0_8px_-4px_rgba(0,0,0,0.02)] min-w-[100px] sm:min-w-[140px]"><span>${escapeHtml(col)}</span></th>`;
-        return `<th class="px-2 sm:px-4 py-2.5 sm:py-3.5 font-bold text-slate-700 whitespace-nowrap ${headBg} backdrop-blur-sm border-b border-slate-200 border-r border-slate-200/50 group/th min-w-[100px] sm:min-w-[130px] z-30 tracking-wide text-[10px] sm:text-xs text-center">
-          <div class="flex items-center justify-center gap-1 sm:gap-2 relative">
-            <span>${escapeHtml(col)}</span>
-            <button onclick="deleteColumn('${escapeHtml(col).replace(/'/g, "\\'")}')" class="absolute right-0 w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center rounded text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/th:opacity-100"><i class="fa-solid fa-xmark text-[9px] sm:text-[10px]"></i></button>
-          </div>
-        </th>`;
-      }).join('')}<th class="px-2 sm:px-4 py-2.5 sm:py-3.5 font-bold text-slate-400 whitespace-nowrap bg-slate-100/90 backdrop-blur-sm border-b border-slate-200 text-center sticky right-0 z-40 w-10 sm:w-14 shadow-[-8px_0_12px_-4px_rgba(0,0,0,0.03)] text-[10px] sm:text-xs">操作</th></tr>`;
+        if (col === "样本名称") {
+           headHtml += `<th class="px-2 sm:px-4 py-2.5 sm:py-3.5 font-bold text-slate-700 whitespace-nowrap ${headBg} backdrop-blur-sm border-b border-slate-200 border-r border-slate-200/50 z-30 tracking-wide text-[10px] sm:text-xs text-center shadow-[4px_0_8px_-4px_rgba(0,0,0,0.02)] min-w-[100px] sm:min-w-[140px]"><span>${escapeHtml(col)}</span></th>`;
+        } else {
+           headHtml += `<th class="px-2 sm:px-4 py-2.5 sm:py-3.5 font-bold text-slate-700 whitespace-nowrap ${headBg} backdrop-blur-sm border-b border-slate-200 border-r border-slate-200/50 group/th min-w-[100px] sm:min-w-[130px] z-30 tracking-wide text-[10px] sm:text-xs text-center">
+              <div class="flex items-center justify-center gap-1 sm:gap-2 relative">
+                <span>${escapeHtml(col)}</span>
+                <button onclick="deleteColumn('${escapeHtml(col).replace(/'/g, "\\'")}')" class="absolute right-0 w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center rounded text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/th:opacity-100"><i class="fa-solid fa-xmark text-[9px] sm:text-[10px]"></i></button>
+              </div>
+            </th>`;
+        }
+      });
+      headHtml += `<th class="px-2 sm:px-4 py-2.5 sm:py-3.5 font-bold text-slate-400 whitespace-nowrap bg-slate-100/90 backdrop-blur-sm border-b border-slate-200 text-center sticky right-0 z-40 w-10 sm:w-14 shadow-[-8px_0_12px_-4px_rgba(0,0,0,0.03)] text-[10px] sm:text-xs">操作</th></tr>`;
 
-      tableBody.innerHTML = successfulItems.map((item, index) => {
-        const rowBg = index % 2 === 0 ? 'bg-white' : 'bg-slate-50/40';
-        return `<tr class="hover:bg-indigo-50/40 transition-colors fade-in-row group/tr ${rowBg}">
-          ${allColumns.map((col, idx) => {
-            const cellBg = idx % 2 === 1 ? 'bg-slate-100/50' : 'bg-transparent';
-            if (col === "样本名称") return `<td class="px-1 sm:px-2 py-1 font-sans font-bold text-slate-800 border-b border-slate-100 border-r border-slate-100/50 whitespace-nowrap ${cellBg}"><input type="text" value="${escapeHtml(item.customName)}" class="bg-transparent hover:bg-white focus:bg-white px-1 sm:px-2 py-1.5 sm:py-2 border border-transparent focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 rounded-md sm:rounded-lg outline-none transition-all w-full text-center text-[10px] sm:text-xs min-w-[80px]" onchange="updateItemName('${item.id}', this.value)"></td>`;
-            const val = item.data[col] !== undefined ? item.data[col] : '';
-            return `<td class="px-1 sm:px-2 py-1 border-b border-slate-100 border-r border-slate-100/50 whitespace-nowrap ${cellBg} transition-colors text-center"><input type="text" value="${escapeHtml(val)}" class="text-slate-600 bg-transparent hover:bg-slate-50 focus:bg-white px-1 sm:px-2 py-1.5 sm:py-2 border border-transparent focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 rounded-md sm:rounded-lg outline-none transition-all w-full placeholder:text-slate-200 text-center text-[10px] sm:text-xs" placeholder="-" onchange="updateCellValue('${item.id}', '${escapeHtml(col).replace(/'/g, "\\'")}', this.value)"></td>`;
-          }).join('')}<td class="px-1 sm:px-2 py-1 border-b border-slate-100 whitespace-nowrap text-center sticky right-0 z-10 shadow-[-8px_0_12px_-4px_rgba(0,0,0,0.02)] group-hover/tr:bg-indigo-50/40 transition-colors bg-white"><button onclick="deleteRowItem('${item.id}')" class="w-6 h-6 sm:w-7 sm:h-7 mx-auto flex items-center justify-center rounded-md text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/tr:opacity-100"><i class="fa-solid fa-trash-can text-[10px] sm:text-[11px]"></i></button></td></tr>`;
-      }).join('');
+      if (tableHead.innerHTML !== headHtml) tableHead.innerHTML = headHtml;
+
+      const currentIds = successfulItems.map(item => item.id);
+      Array.from(tableBody.children).forEach(tr => {
+          const rowId = tr.id.replace('row_', '');
+          if (!currentIds.includes(rowId)) tr.remove();
+      });
+
+      successfulItems.forEach((item, index) => {
+          let tr = document.getElementById(`row_${item.id}`);
+          const rowBg = index % 2 === 0 ? 'bg-white' : 'bg-slate-50/40';
+
+          if (!tr || tr.cells.length !== allColumns.length + 1) {
+              if (!tr) {
+                  tr = document.createElement('tr');
+                  tr.id = `row_${item.id}`;
+                  tableBody.appendChild(tr);
+              }
+              tr.className = `transition-colors fade-in-row group/tr ${rowBg}`;
+              tr.setAttribute('onmouseenter', `highlightPair('${item.id}', true)`);
+              tr.setAttribute('onmouseleave', `highlightPair('${item.id}', false)`);
+
+              let colHtml = '';
+              allColumns.forEach((col, idx) => {
+                const cellBg = idx % 2 === 1 ? 'bg-slate-100/50' : 'bg-transparent';
+                if (col === "样本名称") {
+                    colHtml += `<td class="relative px-1 sm:px-2 py-1 font-sans font-bold text-slate-800 border-b border-slate-100 border-r border-slate-100/50 whitespace-nowrap ${cellBg}"><input type="text" data-index="${index}" value="${escapeHtml(item.customName)}" title="${escapeHtml(item.customName)}" class="bg-transparent hover:bg-white focus:bg-white px-1 sm:px-2 py-1.5 sm:py-2 border border-transparent focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 rounded-md sm:rounded-lg outline-none transition-all w-full text-center text-[10px] sm:text-xs min-w-[80px]" onchange="updateItemName('${item.id}', this.value)"></td>`;
+                } else {
+                    const val = item.data[col] !== undefined ? item.data[col] : '';
+                    colHtml += `<td class="px-1 sm:px-2 py-1 border-b border-slate-100 border-r border-slate-100/50 whitespace-nowrap ${cellBg} transition-colors text-center"><input type="text" data-index="${index}" value="${escapeHtml(val)}" class="text-slate-600 bg-transparent hover:bg-slate-50 focus:bg-white px-1 sm:px-2 py-1.5 sm:py-2 border border-transparent focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 rounded-md sm:rounded-lg outline-none transition-all w-full placeholder:text-slate-200 text-center text-[10px] sm:text-xs" placeholder="-" onchange="updateCellValue('${item.id}', '${escapeHtml(col).replace(/'/g, "\\'")}', this.value)"></td>`;
+                }
+              });
+              colHtml += `<td class="px-1 sm:px-2 py-1 border-b border-slate-100 whitespace-nowrap text-center sticky right-0 z-10 shadow-[-8px_0_12px_-4px_rgba(0,0,0,0.02)] transition-colors bg-white group-hover/tr:bg-indigo-50/40"><button onclick="deleteRowItem('${item.id}')" class="w-6 h-6 sm:w-7 sm:h-7 mx-auto flex items-center justify-center rounded-md text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/tr:opacity-100"><i class="fa-solid fa-trash-can text-[10px] sm:text-[11px]"></i></button></td>`;
+              tr.innerHTML = colHtml;
+          } else {
+              tr.className = `transition-colors group/tr ${rowBg}`; 
+              allColumns.forEach((col, idx) => {
+                  const input = tr.cells[idx].querySelector('input');
+                  if (input) {
+                      const expectedVal = col === "样本名称" ? item.customName : (item.data[col] !== undefined ? String(item.data[col]) : '');
+                      if (input.value !== expectedVal && document.activeElement !== input) {
+                          input.value = expectedVal;
+                          if (col === "样本名称") input.title = expectedVal;
+                      }
+                  }
+              });
+          }
+      });
     }
 
+    // 🌟 原生 XLSX 导出
     exportCsvBtn.addEventListener('click', () => {
       const successfulItems = filesState.filter(f => f.status === 'success' && f.data);
       if (!successfulItems.length) return;
-      const headerLine = allColumns.map(c => `"${c.replace(/"/g, '""')}"`).join(',');
-      const rowLines = successfulItems.map(item => {
-        return allColumns.map(col => `"${String(col === "样本名称" ? item.customName : (item.data[col] !== undefined ? item.data[col] : "")).replace(/"/g, '""')}"`).join(',');
+      
+      const aoa = [allColumns];
+      successfulItems.forEach(item => {
+        const row = allColumns.map(col => {
+          if (col === "样本名称") return item.customName;
+          // 防止某些大模型返回的数值带有不必要的引号，导出时转为纯数字
+          let val = item.data[col] !== undefined ? item.data[col] : "";
+          if(!isNaN(Number(val)) && val !== "") return Number(val);
+          return val;
+        });
+        aoa.push(row);
       });
-      const blob = new Blob(["\uFEFF" + [headerLine, ...rowLines].join("\r\n")], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = `科学数据提取结果_${new Date().toISOString().slice(0,10)}.csv`;
-      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "数据记录");
+      
+      const prefix = currentMode === 'PAM' ? '光合仪' : '氮平衡仪';
+      XLSX.writeFile(wb, `${prefix}提取结果_${new Date().toISOString().slice(0,10)}.xlsx`);
     });
 
     clearAllBtn.addEventListener('click', async () => {
       if (!filesState.length) return;
-      if (confirm('是否确定清空当前工作区的所有数据和图片缓存？\n\n注意：此操作不可恢复。')) {
+      const name = currentMode === 'PAM' ? '光合仪' : '氮平衡仪';
+      if (confirm(`确定要清空【${name}】工作区的所有缓存吗？\n注意：此操作不可恢复，但不会影响另一个仪器的数据。`)) {
+        if (db) {
+           const tx = db.transaction('images', 'readwrite');
+           filesState.forEach(f => tx.objectStore('images').delete(f.id));
+        }
         filesState = []; 
         updateColumnsFromInput();
         fileList.innerHTML = ''; 
@@ -765,8 +984,7 @@ ${specialNote}
         emptyListTip.classList.remove('hidden'); 
         renderTable(); 
         updateUI();
-        localStorage.removeItem('extracted_data_state_multidevice');
-        await clearImageCache();
+        localStorage.removeItem(getStorageKey());
       }
     });
 
@@ -776,6 +994,7 @@ ${specialNote}
     }
 
     (async function initApp() {
+      updateModeUI();
       loadApiSettings();
       try {
         await initDB();
