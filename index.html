@@ -71,10 +71,10 @@
             <i class="fa-solid fa-microscope text-[14px]"></i>
           </span>
           <span id="header-title" class="bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">光合仪</span> 
-          <span class="text-slate-800">数据提取</span>
-          <span class="text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold border border-blue-100 whitespace-nowrap">支持并发版</span>
+          <span class="text-slate-800">提取中心</span>
+          <span class="text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold border border-blue-100 whitespace-nowrap">视窗强锁版</span>
         </h1>
-        <p class="text-[11px] sm:text-sm text-slate-500 mt-1.5 font-medium sm:ml-1 leading-relaxed">已同步移动端布局锁定引擎。手机上下排版严格等高，界面永不坍塌。</p>
+        <p class="text-[11px] sm:text-sm text-slate-500 mt-1.5 font-medium sm:ml-1 leading-relaxed">彻底修复移动端由于内容撑开导致的高度坍塌和无限延伸问题，框体大小绝对稳定。</p>
       </div>
       <div class="flex items-center gap-3 shrink-0 w-full sm:w-auto">
         <button id="clearAllBtn" class="w-full sm:w-auto px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
@@ -132,11 +132,11 @@
       </div>
     </div>
 
-    <!-- 🌟 核心布局：电脑端左右绝对等高（h-[70vh]），手机端上下绝对等高（h-[480px]） -->
+    <!-- 🌟 核心：外层骨架锁定高度 (PC端70vh, 手机端靠内部模块设定高度栈) -->
     <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 relative lg:h-[70vh] lg:min-h-[600px] lg:max-h-[850px]">
       
-      <!-- 左侧：队列面板 -->
-      <div class="flex flex-col w-full lg:w-[320px] xl:w-[380px] shrink-0 h-[480px] sm:h-[550px] lg:h-full space-y-4 sm:space-y-5">
+      <!-- 左侧：队列面板 (手机端强制500px高) -->
+      <div class="flex flex-col w-full lg:w-[320px] xl:w-[380px] shrink-0 h-[500px] sm:h-[600px] lg:h-full space-y-4 sm:space-y-5">
         
         <div id="clickUploadZone" class="bg-gradient-to-b from-slate-50 to-white border border-dashed border-slate-300 hover:border-indigo-400 transition-all duration-300 py-5 sm:py-6 rounded-2xl sm:rounded-3xl flex flex-col items-center justify-center text-center cursor-pointer relative overflow-hidden group hover:shadow-md hover:shadow-indigo-500/5 active:scale-[0.98] shrink-0">
           <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
@@ -147,25 +147,28 @@
           <p class="text-slate-400 text-[9px] sm:text-[10px] font-medium px-4">支持移动端多图批量与 4K 长截图提取</p>
         </div>
 
-        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-sm p-3 sm:p-4 flex flex-col flex-1 overflow-hidden">
+        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-sm p-3 sm:p-4 flex flex-col flex-1 overflow-hidden min-h-0">
           <div class="flex items-center justify-between pb-2 sm:pb-3 border-b border-slate-100 shrink-0">
             <span class="text-[11px] sm:text-sm font-bold text-slate-800 flex items-center gap-2">
               <i class="fa-solid fa-list-check text-slate-400"></i> 解析列队
             </span>
             <span id="fileCountBadge" class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md tracking-wider">0 项</span>
           </div>
-          <div id="fileList" class="divide-y divide-slate-50 flex-1 overflow-y-auto mt-2 pb-2 pr-1 space-y-1">
-            <div id="emptyListTip" class="h-full flex flex-col items-center justify-center text-slate-300 gap-2 sm:gap-3 opacity-60 py-4">
-              <i class="fa-regular fa-folder-open text-2xl sm:text-3xl mb-1"></i>
-              <p class="text-[10px] sm:text-xs font-medium">暂无待处理文件</p>
+          <!-- 🌟 绝对包裹容器：斩断内容高度对父级的影响 -->
+          <div class="flex-1 relative min-h-0 w-full mt-2">
+            <div id="fileList" class="absolute inset-0 divide-y divide-slate-50 overflow-y-auto pb-2 pr-1 space-y-1">
+              <div id="emptyListTip" class="h-full flex flex-col items-center justify-center text-slate-300 gap-2 sm:gap-3 opacity-60 py-4">
+                <i class="fa-regular fa-folder-open text-2xl sm:text-3xl mb-1"></i>
+                <p class="text-[10px] sm:text-xs font-medium">暂无待处理文件</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 右侧：数据表格区 -->
-      <div class="flex-1 min-w-0 flex flex-col h-[480px] sm:h-[550px] lg:h-full">
-        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-sm p-3 sm:p-5 flex flex-col flex-1 relative overflow-hidden">
+      <!-- 右侧：数据表格区 (手机端也强制500px高，保证左右两块绝对等高且对称) -->
+      <div class="flex-1 min-w-0 flex flex-col h-[500px] sm:h-[600px] lg:h-full">
+        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-sm p-3 sm:p-5 flex flex-col flex-1 relative overflow-hidden min-h-0">
           
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4 shrink-0">
             <div>
@@ -186,19 +189,25 @@
             </div>
           </div>
 
-          <div class="flex-1 overflow-auto rounded-xl border border-slate-200/60 bg-slate-50/50 relative shadow-inner w-full" id="tableWrapper">
-            <div id="tablePlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 z-10 bg-white/50 backdrop-blur-sm transition-opacity">
-              <div class="w-10 h-10 sm:w-14 sm:h-14 bg-slate-100 rounded-xl flex items-center justify-center mb-2 sm:mb-3 shadow-sm border border-slate-200/50">
-                <i class="fa-solid fa-table-list text-xl sm:text-2xl text-slate-300"></i>
+          <!-- 🌟 核心：flex-1包裹 absolute inset-0 锁定内部高度，永不被数据撑爆 -->
+          <div class="flex-1 relative min-h-0 w-full mt-1">
+            <div class="absolute inset-0 overflow-auto rounded-xl border border-slate-200/60 bg-slate-50/50 shadow-inner" id="tableWrapper">
+              
+              <!-- 占位符现在直接铺满内部，完美居中 -->
+              <div id="tablePlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 z-10 bg-white/50 backdrop-blur-sm transition-opacity">
+                <div class="w-10 h-10 sm:w-14 sm:h-14 bg-slate-100 rounded-xl flex items-center justify-center mb-2 sm:mb-3 shadow-sm border border-slate-200/50">
+                  <i class="fa-solid fa-table-list text-xl sm:text-2xl text-slate-300"></i>
+                </div>
+                <p class="text-[10px] sm:text-xs font-medium">数据表将在此处生成</p>
               </div>
-              <p class="text-[10px] sm:text-xs font-medium">数据表将在此处生成</p>
+              
+              <table id="dataTable" class="w-full text-[10px] sm:text-xs text-center hidden relative select-none">
+                <thead id="tableHead"></thead>
+                <tbody id="tableBody" class="font-mono text-slate-700 bg-white relative"></tbody>
+              </table>
             </div>
-            
-            <table id="dataTable" class="w-full text-[10px] sm:text-xs text-center hidden relative select-none">
-              <thead id="tableHead"></thead>
-              <tbody id="tableBody" class="font-mono text-slate-700 bg-white relative"></tbody>
-            </table>
           </div>
+
         </div>
       </div>
     </div>
@@ -214,7 +223,7 @@
            .replace(/'/g, "&#039;");
     }
 
-    const DB_NAME = 'ImageCacheDB_MobileSync_V7';
+    const DB_NAME = 'ImageCacheDB_ViewportLock_V8';
     const DB_VERSION = 1;
     let db;
 
@@ -378,8 +387,8 @@
       loadTableData(); 
     };
 
-    function getStorageKey() { return `extracted_data_state_${currentMode}_MobileSync`; }
-    function getHeadersKey() { return `user_target_headers_${currentMode}_MobileSync`; }
+    function getStorageKey() { return `extracted_data_state_${currentMode}_ViewportLock`; }
+    function getHeadersKey() { return `user_target_headers_${currentMode}_ViewportLock`; }
 
     function updateConcurrencyBadge() {
       const badge = document.getElementById('concurrencyBadge');
@@ -644,7 +653,7 @@
 
                   const rawEntries = await callVisionApiEntries(base64, modeAtStart, currentKey);
                   
-                  const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeAtStart}_MobileSync`) || (modeAtStart === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
+                  const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeAtStart}_ViewportLock`) || (modeAtStart === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
                   const targets = savedHeadersStr.split(',').map(h => h.trim()).filter(Boolean);
                   
                   const alignedData = {};
@@ -674,7 +683,7 @@
                       updateUI();
                       saveTableData();
                   } else {
-                      const bgStorageKey = `extracted_data_state_${modeAtStart}_MobileSync`;
+                      const bgStorageKey = `extracted_data_state_${modeAtStart}_ViewportLock`;
                       const bgDataStr = localStorage.getItem(bgStorageKey);
                       if (bgDataStr) {
                           let bgFilesState = JSON.parse(bgDataStr);
@@ -693,7 +702,7 @@
                       updateQueueItemUI(pendingItem);
                       saveTableData();
                   } else {
-                      const bgStorageKey = `extracted_data_state_${modeAtStart}_MobileSync`;
+                      const bgStorageKey = `extracted_data_state_${modeAtStart}_ViewportLock`;
                       const bgDataStr = localStorage.getItem(bgStorageKey);
                       if (bgDataStr) {
                           let bgFilesState = JSON.parse(bgDataStr);
@@ -734,7 +743,7 @@
 
       if (!baseUrl.endsWith('/chat/completions')) baseUrl += '/chat/completions';
 
-      const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeForCall}_MobileSync`) || (modeForCall === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
+      const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeForCall}_ViewportLock`) || (modeForCall === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
       const targets = savedHeadersStr.split(',').map(h => h.trim()).filter(Boolean);
       
       let specialNote = "";
