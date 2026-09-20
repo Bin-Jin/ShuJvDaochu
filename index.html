@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+数据<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -22,20 +22,22 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .pair-hover {
+    /* 🌟 双轨高光样式：兼容鼠标悬停与点击锁定 */
+    .pair-hover, .pair-locked {
       background-color: #eef2ff !important;
       box-shadow: inset 0 0 0 1px #818cf8 !important;
       transition: all 0.15s ease-in-out;
       border-radius: 0.25rem;
     }
-    td.pair-hover { border-radius: 0; }
-    tr.pair-hover td:first-child { border-top-left-radius: 0.5rem; border-bottom-left-radius: 0.5rem; }
-    tr.pair-hover td:last-child { border-top-right-radius: 0.5rem; border-bottom-right-radius: 0.5rem; }
+    .pair-locked { background-color: #e0e7ff !important; box-shadow: inset 0 0 0 2px #6366f1 !important; }
+    td.pair-hover, td.pair-locked { border-radius: 0; }
+    tr.pair-hover td:first-child, tr.pair-locked td:first-child { border-top-left-radius: 0.5rem; border-bottom-left-radius: 0.5rem; }
+    tr.pair-hover td:last-child, tr.pair-locked td:last-child { border-top-right-radius: 0.5rem; border-bottom-right-radius: 0.5rem; }
     
     table { border-collapse: separate !important; border-spacing: 0; }
     .cell-selected {
-        background-color: #e0e7ff !important;
-        box-shadow: inset 0 0 0 2px #6366f1 !important;
+        background-color: #c7d2fe !important;
+        box-shadow: inset 0 0 0 2px #4f46e5 !important;
     }
     .cell-input { cursor: pointer; caret-color: transparent; }
     .cell-input:not([readonly]) {
@@ -72,9 +74,9 @@
           </span>
           <span id="header-title" class="bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">光合仪</span> 
           <span class="text-slate-800">数据提取</span>
-          <span class="text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold border border-blue-100 whitespace-nowrap">支持并发版</span>
+          <span class="text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold border border-blue-100 whitespace-nowrap">双向平滑联动版</span>
         </h1>
-        <p class="text-[11px] sm:text-sm text-slate-500 mt-1.5 font-medium sm:ml-1 leading-relaxed">已开启双向视窗追踪引擎。点击任意一侧，另一侧瞬间平滑滚动对齐，数据无界限。</p>
+        <p class="text-[11px] sm:text-sm text-slate-500 mt-1.5 font-medium sm:ml-1 leading-relaxed">已开启双向视窗追踪引擎与点击高光保护。点击任意一侧，不仅会平滑跳转，高光还将永远烙印追踪该对象。</p>
       </div>
       <div class="flex items-center gap-3 shrink-0 w-full sm:w-auto">
         <button id="clearAllBtn" class="w-full sm:w-auto px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
@@ -172,7 +174,7 @@
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4 shrink-0">
             <div>
               <h2 class="font-extrabold text-slate-800 text-sm sm:text-lg tracking-tight">可视化数据预览</h2>
-              <p class="text-[9px] sm:text-[11px] text-slate-500 mt-1 font-medium leading-tight">表头和首尾列已支持独立冻结；单元格<span class="text-indigo-500 font-bold">单双击防误触</span>已开启。</p>
+              <p class="text-[9px] sm:text-[11px] text-slate-500 mt-1 font-medium leading-tight">点击队列或表格任意对象皆可实现<span class="text-indigo-500 font-bold">高光锁定</span>并双向视窗跳转。</p>
             </div>
             
             <div class="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
@@ -220,7 +222,7 @@
            .replace(/'/g, "&#039;");
     }
 
-    const DB_NAME = 'ImageCacheDB_BidirectionalSync_V13';
+    const DB_NAME = 'ImageCacheDB_StateLock_V15';
     const DB_VERSION = 1;
     let db;
 
@@ -228,7 +230,8 @@
     let isStickyEnabled = localStorage.getItem('enable_sticky_cols') !== 'false';
     let isRowStickyEnabled = localStorage.getItem('enable_sticky_row') !== 'false';
 
-    window.activeHoverId = null;
+    // 🌟 状态锁定引擎核心变量
+    window.lockedPairId = null; 
     window.activeSelectedCell = { id: null, col: null };
 
     function initDB() {
@@ -387,8 +390,8 @@
       loadTableData(); 
     };
 
-    function getStorageKey() { return `extracted_data_state_${currentMode}_BidirectionalSync_V13`; }
-    function getHeadersKey() { return `user_target_headers_${currentMode}_BidirectionalSync_V13`; }
+    function getStorageKey() { return `extracted_data_state_${currentMode}_StateLock_V15`; }
+    function getHeadersKey() { return `user_target_headers_${currentMode}_StateLock_V15`; }
 
     function updateConcurrencyBadge() {
       const badge = document.getElementById('concurrencyBadge');
@@ -652,7 +655,7 @@
 
                   const rawEntries = await callVisionApiEntries(base64, modeAtStart, currentKey);
                   
-                  const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeAtStart}_BidirectionalSync_V13`) || (modeAtStart === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
+                  const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeAtStart}_StateLock_V15`) || (modeAtStart === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
                   const targets = savedHeadersStr.split(',').map(h => h.trim()).filter(Boolean);
                   
                   const alignedData = {};
@@ -682,7 +685,7 @@
                       updateUI();
                       saveTableData();
                   } else {
-                      const bgStorageKey = `extracted_data_state_${modeAtStart}_BidirectionalSync_V13`;
+                      const bgStorageKey = `extracted_data_state_${modeAtStart}_StateLock_V15`;
                       const bgDataStr = localStorage.getItem(bgStorageKey);
                       if (bgDataStr) {
                           let bgFilesState = JSON.parse(bgDataStr);
@@ -701,7 +704,7 @@
                       updateQueueItemUI(pendingItem);
                       saveTableData();
                   } else {
-                      const bgStorageKey = `extracted_data_state_${modeAtStart}_BidirectionalSync_V13`;
+                      const bgStorageKey = `extracted_data_state_${modeAtStart}_StateLock_V15`;
                       const bgDataStr = localStorage.getItem(bgStorageKey);
                       if (bgDataStr) {
                           let bgFilesState = JSON.parse(bgDataStr);
@@ -734,7 +737,7 @@
 
       if (!baseUrl.endsWith('/chat/completions')) baseUrl += '/chat/completions';
 
-      const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeForCall}_BidirectionalSync_V13`) || (modeForCall === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
+      const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeForCall}_StateLock_V15`) || (modeForCall === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
       const targets = savedHeadersStr.split(',').map(h => h.trim()).filter(Boolean);
       
       let specialNote = "";
@@ -852,28 +855,56 @@ ${specialNote}
       return finalEntries;
     }
 
+    // 🌟 1. 独立锁死保护函数
+    window.lockPair = function(id) {
+        if (window.lockedPairId && window.lockedPairId !== id) {
+            document.querySelectorAll('.pair-locked').forEach(el => el.classList.remove('pair-locked'));
+        }
+        window.lockedPairId = id;
+        if (id) {
+            const row = document.getElementById(`row_${id}`);
+            const queue = document.getElementById(`queue_${id}`);
+            if (row) row.classList.add('pair-locked');
+            if (queue) queue.classList.add('pair-locked');
+        }
+    };
+
+    // 🌟 2. 依然保留轻量的鼠标悬停临时高亮
+    window.highlightPair = function(id, isHover) {
+        const row = document.getElementById(`row_${id}`);
+        const queue = document.getElementById(`queue_${id}`);
+        if (isHover) {
+            if (row) row.classList.add('pair-hover');
+            if (queue) queue.classList.add('pair-hover');
+        } else {
+            if (row) row.classList.remove('pair-hover');
+            if (queue) queue.classList.remove('pair-hover');
+        }
+    };
+
+    // 🌟 3. 全局点击监控：避开关键对象以清理高光
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('.cell-input')) {
+        // 如果点的是原图预览框内的元素，绝对不清理高光！
+        if (e.target.closest('#imagePreviewModal') || e.target.closest('img') || e.target.closest('.fa-image')) return;
+
+        // 如果点击的不是输入框、也不是操作按钮，说明点在空白处，此时解锁一切状态
+        if (!e.target.closest('.cell-input') && !e.target.closest('button')) {
             document.querySelectorAll('.cell-selected').forEach(el => {
                 el.classList.remove('cell-selected');
                 el.setAttribute('readonly', 'true');
             });
             window.activeSelectedCell = { id: null, col: null };
-            
-            if (window.activeHoverId && !e.target.closest('tr') && !e.target.closest('.group\\/item')) {
-                window.highlightPair(window.activeHoverId, false);
-            }
+            window.lockPair(null); // 清理死锁高光
         }
     });
 
-    // 🌟 核心升级：包含滚动跳转机制的交互引擎
+    // 🌟 4. 核心升级：包含平滑跳转、锁定和单双击判定的互动引擎
     window.handleCellInteract = function(input, event, id) {
         if (!input.hasAttribute('readonly')) return; 
 
         const now = new Date().getTime();
         const lastClick = input.dataset.lastClick ? parseInt(input.dataset.lastClick) : 0;
         
-        // 1. 清理其他选中项
         document.querySelectorAll('.cell-selected').forEach(el => {
             if (el !== input) {
                 el.classList.remove('cell-selected');
@@ -881,28 +912,21 @@ ${specialNote}
             }
         });
 
-        // 2. 双向视窗平滑跳跃逻辑 🌟
+        // 无论单双击，只要摸到输入框，立刻触发高亮锁定和双向跳转！
+        window.lockPair(id);
+        
+        // 双向跳转判定
         const isFromQueue = input.closest('#fileList') !== null;
         if (isFromQueue) {
             const targetRow = document.getElementById(`row_${id}`);
-            if (targetRow) {
-                targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            if (targetRow) targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else {
             const targetQueue = document.getElementById(`queue_${id}`);
-            if (targetQueue) {
-                targetQueue.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            if (targetQueue) targetQueue.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        // 3. 强行锁定高亮到当前行，保证跳转过去能看清楚
-        if (window.activeHoverId && window.activeHoverId !== id) {
-            window.highlightPair(window.activeHoverId, false);
-        }
-        window.highlightPair(id, true);
         window.activeSelectedCell = { id: id, col: input.dataset.col || '样本名称' };
 
-        // 4. 单双击处理
         if (now - lastClick < 350) {
             input.removeAttribute('readonly');
             input.classList.remove('cell-selected');
@@ -964,21 +988,10 @@ ${specialNote}
         }
     };
 
-    window.highlightPair = function(id, isHover) {
-      const row = document.getElementById(`row_${id}`);
-      const queue = document.getElementById(`queue_${id}`);
-      if(isHover) {
-          window.activeHoverId = id; 
-          if(row) row.classList.add('pair-hover');
-          if(queue) queue.classList.add('pair-hover');
-      } else {
-          if(window.activeHoverId === id) window.activeHoverId = null;
-          if(row) row.classList.remove('pair-hover');
-          if(queue) queue.classList.remove('pair-hover');
-      }
-    };
-
     window.previewImage = async function(id) {
+        // 打开预览时，强制锁定当前行
+        window.lockPair(id);
+
         const base64 = await getImageFromCache(id);
         if(base64) {
             document.getElementById('previewImg').src = base64;
@@ -996,7 +1009,10 @@ ${specialNote}
       div.id = `queue_${item.id}`;
       div.setAttribute('onmouseenter', `highlightPair('${item.id}', true)`);
       div.setAttribute('onmouseleave', `highlightPair('${item.id}', false)`);
-      div.className = 'py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl transition-all duration-200 flex items-center justify-between gap-1.5 sm:gap-2 group/item hover:bg-slate-50 border border-transparent hover:border-slate-100 fade-in-row mt-1';
+      
+      // 初始化时检查是否应该是 locked 状态
+      const isLocked = window.lockedPairId === item.id;
+      div.className = `py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl transition-all duration-200 flex items-center justify-between gap-1.5 sm:gap-2 group/item hover:bg-slate-50 border border-transparent hover:border-slate-100 fade-in-row mt-1 ${isLocked ? 'pair-locked' : ''}`;
       
       const imgHtml = item.thumb 
         ? `<img src="${item.thumb}" class="w-6 h-6 sm:w-8 sm:h-8 rounded-md object-cover cursor-zoom-in hover:opacity-80 border border-slate-200 shadow-sm shrink-0 transition-opacity" onclick="previewImage('${item.id}')" title="点击预览原图" alt="缩略图">`
@@ -1077,6 +1093,7 @@ ${specialNote}
       }
     };
 
+    // 🌟 表格渲染器，强制继承高光与双向交互点击
     function renderTable() {
       const successfulItems = filesState.filter(f => f.status === 'success' && f.data);
       if (successfulItems.length === 0) {
@@ -1125,7 +1142,8 @@ ${specialNote}
           const rowBg = index % 2 === 0 ? 'bg-white' : 'bg-slate-50/60';
           const stickyBgLeft = index % 2 === 0 ? 'bg-white/95' : 'bg-slate-50/95'; 
           
-          const isHovered = (window.activeHoverId === item.id) || (tr && tr.classList.contains('pair-hover'));
+          // 判定这行是否被锁定了
+          const isLocked = window.lockedPairId === item.id;
 
           if (!tr || tr.cells.length !== allColumns.length + 1 || tr.dataset.sticky !== String(isStickyEnabled)) {
               if (!tr) {
@@ -1134,7 +1152,7 @@ ${specialNote}
               }
               tr.dataset.sticky = String(isStickyEnabled);
               
-              tr.className = `transition-colors fade-in-row group/tr ${rowBg} ${isHovered ? 'pair-hover' : ''}`;
+              tr.className = `transition-colors fade-in-row group/tr ${rowBg} ${isLocked ? 'pair-locked' : ''}`;
               tr.setAttribute('onmouseenter', `highlightPair('${item.id}', true)`);
               tr.setAttribute('onmouseleave', `highlightPair('${item.id}', false)`);
 
@@ -1160,7 +1178,7 @@ ${specialNote}
               }
 
           } else {
-              tr.className = `transition-colors group/tr ${rowBg} ${isHovered ? 'pair-hover' : ''}`;
+              tr.className = `transition-colors group/tr ${rowBg} ${isLocked ? 'pair-locked' : ''}`;
               
               allColumns.forEach((col, idx) => {
                   const input = tr.cells[idx].querySelector('input');
