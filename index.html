@@ -72,9 +72,9 @@
           </span>
           <span id="header-title" class="bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">光合仪</span> 
           <span class="text-slate-800">数据提取</span>
-          <span class="text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold border border-blue-100 whitespace-nowrap">支持并发版</span>
+          <span class="text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold border border-blue-100 whitespace-nowrap">终极状态保护版</span>
         </h1>
-        <p class="text-[11px] sm:text-sm text-slate-500 mt-1.5 font-medium sm:ml-1 leading-relaxed">彻底斩断左右两栏的所有自动滚动逻辑，无论导入多少文件，滑动控制权完全归你。</p>
+        <p class="text-[11px] sm:text-sm text-slate-500 mt-1.5 font-medium sm:ml-1 leading-relaxed">已加入高光与焦点锁定追踪。无论后台数据如何疯狂涌入，你的选中与高亮状态永不消失。</p>
       </div>
       <div class="flex items-center gap-3 shrink-0 w-full sm:w-auto">
         <button id="clearAllBtn" class="w-full sm:w-auto px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
@@ -132,7 +132,7 @@
       </div>
     </div>
 
-    <!-- 左右布局区 -->
+    <!-- 绝对锁定高度，保障左右两栏完美等高 -->
     <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 relative lg:h-[70vh] lg:min-h-[600px] lg:max-h-[850px]">
       
       <!-- 左侧：队列面板 -->
@@ -150,7 +150,7 @@
         <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-sm p-3 sm:p-4 flex flex-col flex-1 overflow-hidden min-h-0">
           <div class="flex items-center justify-between pb-2 sm:pb-3 border-b border-slate-100 shrink-0">
             <span class="text-[11px] sm:text-sm font-bold text-slate-800 flex items-center gap-2">
-              <i class="fa-solid fa-list-check text-slate-400"></i> 解析列队
+              <i class="fa-solid fa-list-check text-slate-400"></i> 解析队列
             </span>
             <span id="fileCountBadge" class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md tracking-wider">0 项</span>
           </div>
@@ -220,13 +220,17 @@
            .replace(/'/g, "&#039;");
     }
 
-    const DB_NAME = 'ImageCacheDB_NoJump_V11';
+    const DB_NAME = 'ImageCacheDB_StatePreserve_V12';
     const DB_VERSION = 1;
     let db;
 
     let currentMode = localStorage.getItem('active_instrument_mode') || 'PAM';
     let isStickyEnabled = localStorage.getItem('enable_sticky_cols') !== 'false';
     let isRowStickyEnabled = localStorage.getItem('enable_sticky_row') !== 'false';
+
+    // 🌟 全局核心状态追踪变量：死死记住当前的Hover行与Selected格
+    window.activeHoverId = null;
+    window.activeSelectedCell = { id: null, col: null };
 
     function initDB() {
       return new Promise((resolve, reject) => {
@@ -384,8 +388,8 @@
       loadTableData(); 
     };
 
-    function getStorageKey() { return `extracted_data_state_${currentMode}_NoJump_V11`; }
-    function getHeadersKey() { return `user_target_headers_${currentMode}_NoJump_V11`; }
+    function getStorageKey() { return `extracted_data_state_${currentMode}_StatePreserve`; }
+    function getHeadersKey() { return `user_target_headers_${currentMode}_StatePreserve`; }
 
     function updateConcurrencyBadge() {
       const badge = document.getElementById('concurrencyBadge');
@@ -573,8 +577,6 @@
         filesState.push(item);
         renderQueueItemDOM(item);
 
-        // 🌟 彻底移除：不再执行 setTimeout 强迫滚动条拉到底部！
-
         compressImageToBase64(file).then(base64 => {
             saveImageToCache(fileId, base64);
         }).catch(e => console.error('图片落库失败', e));
@@ -651,7 +653,7 @@
 
                   const rawEntries = await callVisionApiEntries(base64, modeAtStart, currentKey);
                   
-                  const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeAtStart}_NoJump_V11`) || (modeAtStart === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
+                  const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeAtStart}_StatePreserve`) || (modeAtStart === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
                   const targets = savedHeadersStr.split(',').map(h => h.trim()).filter(Boolean);
                   
                   const alignedData = {};
@@ -681,7 +683,7 @@
                       updateUI();
                       saveTableData();
                   } else {
-                      const bgStorageKey = `extracted_data_state_${modeAtStart}_NoJump_V11`;
+                      const bgStorageKey = `extracted_data_state_${modeAtStart}_StatePreserve`;
                       const bgDataStr = localStorage.getItem(bgStorageKey);
                       if (bgDataStr) {
                           let bgFilesState = JSON.parse(bgDataStr);
@@ -700,7 +702,7 @@
                       updateQueueItemUI(pendingItem);
                       saveTableData();
                   } else {
-                      const bgStorageKey = `extracted_data_state_${modeAtStart}_NoJump_V11`;
+                      const bgStorageKey = `extracted_data_state_${modeAtStart}_StatePreserve`;
                       const bgDataStr = localStorage.getItem(bgStorageKey);
                       if (bgDataStr) {
                           let bgFilesState = JSON.parse(bgDataStr);
@@ -713,7 +715,6 @@
                       }
                   }
               }
-              
               await sleep(300);
           }
       }
@@ -734,7 +735,7 @@
 
       if (!baseUrl.endsWith('/chat/completions')) baseUrl += '/chat/completions';
 
-      const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeForCall}_NoJump_V11`) || (modeForCall === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
+      const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeForCall}_StatePreserve`) || (modeForCall === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
       const targets = savedHeadersStr.split(',').map(h => h.trim()).filter(Boolean);
       
       let specialNote = "";
@@ -852,16 +853,24 @@ ${specialNote}
       return finalEntries;
     }
 
+    // 🌟 全局事件监听：点击空白处取消选中，但保留高亮直到点击其他实体
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.cell-input')) {
             document.querySelectorAll('.cell-selected').forEach(el => {
                 el.classList.remove('cell-selected');
                 el.setAttribute('readonly', 'true');
             });
+            window.activeSelectedCell = { id: null, col: null };
+            
+            // 点击空白区域时清除全局Hover锁定
+            if (window.activeHoverId && !e.target.closest('tr') && !e.target.closest('.group\\/item')) {
+                window.highlightPair(window.activeHoverId, false);
+            }
         }
     });
 
-    window.handleCellInteract = function(input, event) {
+    // 🌟 重新设计的交互防误触函数：每次点击都会【强制锁定】Hover与Selected状态
+    window.handleCellInteract = function(input, event, id) {
         if (!input.hasAttribute('readonly')) return; 
 
         const now = new Date().getTime();
@@ -873,6 +882,13 @@ ${specialNote}
                 el.setAttribute('readonly', 'true');
             }
         });
+
+        // 强行锁定高亮到当前行
+        if (window.activeHoverId && window.activeHoverId !== id) {
+            window.highlightPair(window.activeHoverId, false);
+        }
+        window.highlightPair(id, true);
+        window.activeSelectedCell = { id: id, col: input.dataset.col };
 
         if (now - lastClick < 350) {
             input.removeAttribute('readonly');
@@ -935,13 +951,17 @@ ${specialNote}
         }
     };
 
+    // 🌟 全局 Hover 状态托管引擎
     window.highlightPair = function(id, isHover) {
       const row = document.getElementById(`row_${id}`);
       const queue = document.getElementById(`queue_${id}`);
       if(isHover) {
+          window.activeHoverId = id; // 将ID写入全局唯一锁
           if(row) row.classList.add('pair-hover');
           if(queue) queue.classList.add('pair-hover');
       } else {
+          // 仅在明确解锁时清理
+          if(window.activeHoverId === id) window.activeHoverId = null;
           if(row) row.classList.remove('pair-hover');
           if(queue) queue.classList.remove('pair-hover');
       }
@@ -971,14 +991,15 @@ ${specialNote}
         ? `<img src="${item.thumb}" class="w-6 h-6 sm:w-8 sm:h-8 rounded-md object-cover cursor-zoom-in hover:opacity-80 border border-slate-200 shadow-sm shrink-0 transition-opacity" onclick="previewImage('${item.id}')" title="点击预览原图" alt="缩略图">`
         : `<div onclick="previewImage('${item.id}')" class="w-6 h-6 sm:w-8 sm:h-8 rounded-md bg-indigo-50 text-indigo-400 flex items-center justify-center shrink-0 cursor-zoom-in hover:opacity-80 transition-opacity" title="点击预览原图"><i class="fa-regular fa-image text-[9px] sm:text-xs"></i></div>`;
 
+      // 🌟 左侧队列绑定ID传参
       div.innerHTML = `
         <div class="flex items-center gap-1.5 sm:gap-3 flex-1 min-w-0 pr-1">
           ${imgHtml}
           <div class="flex-1 min-w-0">
-            <input type="text" value="${escapeHtml(item.customName)}" title="${escapeHtml(item.customName)}" 
+            <input type="text" data-col="样本名称" value="${escapeHtml(item.customName)}" title="${escapeHtml(item.customName)}" 
                    class="name-input cell-input text-[11px] sm:text-xs font-bold text-slate-700 bg-transparent hover:bg-white focus:bg-white px-1 sm:px-2 py-1 sm:py-1.5 border border-transparent rounded-md outline-none w-full transition-all truncate"
                    readonly
-                   onclick="handleCellInteract(this, event)"
+                   onclick="handleCellInteract(this, event, '${item.id}')"
                    onblur="handleQueueNameBlur(this, '${item.id}')"
                    onkeydown="handleCellKey(event, this)">
           </div>
@@ -1046,6 +1067,7 @@ ${specialNote}
       }
     };
 
+    // 🌟 表格 Diff 引擎，强制继承前序的高光锁死状态
     function renderTable() {
       const successfulItems = filesState.filter(f => f.status === 'success' && f.data);
       if (successfulItems.length === 0) {
@@ -1093,6 +1115,9 @@ ${specialNote}
           let tr = document.getElementById(`row_${item.id}`);
           const rowBg = index % 2 === 0 ? 'bg-white' : 'bg-slate-50/60';
           const stickyBgLeft = index % 2 === 0 ? 'bg-white/95' : 'bg-slate-50/95'; 
+          
+          // 🌟 读取旧的高亮状态：如果正处于点击锁死状态，强制加上 pair-hover
+          const isHovered = (window.activeHoverId === item.id) || (tr && tr.classList.contains('pair-hover'));
 
           if (!tr || tr.cells.length !== allColumns.length + 1 || tr.dataset.sticky !== String(isStickyEnabled)) {
               if (!tr) {
@@ -1100,26 +1125,38 @@ ${specialNote}
                   tr.id = `row_${item.id}`;
               }
               tr.dataset.sticky = String(isStickyEnabled);
-              tr.className = `transition-colors fade-in-row group/tr ${rowBg}`;
+              
+              // 🌟 新增/重建行：直接拼上高光类名
+              tr.className = `transition-colors fade-in-row group/tr ${rowBg} ${isHovered ? 'pair-hover' : ''}`;
               tr.setAttribute('onmouseenter', `highlightPair('${item.id}', true)`);
               tr.setAttribute('onmouseleave', `highlightPair('${item.id}', false)`);
 
               let colHtml = '';
               allColumns.forEach((col, idx) => {
                 const cellBg = idx % 2 === 1 ? 'bg-slate-100/50' : 'bg-transparent';
+                const safeCol = escapeHtml(col).replace(/'/g, "\\'"); // 防转义注入
                 if (col === "样本名称") {
                     const tdLeftClass = isStickyEnabled ? `sticky left-0 z-[35] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.02)] ${stickyBgLeft} backdrop-blur-sm` : cellBg;
-                    colHtml += `<td class="relative ${tdLeftClass} px-1 sm:px-2 py-1 font-sans border-b border-slate-100 border-r border-slate-200/80 whitespace-nowrap transition-all duration-300"><input type="text" data-index="${index}" data-col="样本名称" value="${escapeHtml(item.customName)}" title="${escapeHtml(item.customName)}" class="cell-input bg-transparent px-1 sm:px-2 py-1.5 sm:py-2 border border-transparent rounded-md sm:rounded-lg outline-none transition-all w-full text-center text-[11px] sm:text-xs min-w-[75px] font-bold text-slate-800" readonly onclick="handleCellInteract(this, event)" onblur="handleCellBlur(this, '${item.id}', '样本名称')" onkeydown="handleCellKey(event, this)"></td>`;
+                    colHtml += `<td class="relative ${tdLeftClass} px-1 sm:px-2 py-1 font-sans border-b border-slate-100 border-r border-slate-200/80 whitespace-nowrap transition-all duration-300"><input type="text" data-index="${index}" data-col="样本名称" value="${escapeHtml(item.customName)}" title="${escapeHtml(item.customName)}" class="cell-input bg-transparent px-1 sm:px-2 py-1.5 sm:py-2 border border-transparent rounded-md sm:rounded-lg outline-none transition-all w-full text-center text-[11px] sm:text-xs min-w-[75px] font-bold text-slate-800" readonly onclick="handleCellInteract(this, event, '${item.id}')" onblur="handleCellBlur(this, '${item.id}', '样本名称')" onkeydown="handleCellKey(event, this)"></td>`;
                 } else {
                     const val = item.data[col] !== undefined ? item.data[col] : '';
-                    colHtml += `<td class="${cellBg} px-1 sm:px-2 py-1 border-b border-slate-100 border-r border-slate-100/50 whitespace-nowrap transition-colors text-center"><input type="text" data-index="${index}" value="${escapeHtml(val)}" class="cell-input bg-transparent px-1 sm:px-2 py-1.5 sm:py-2 border border-transparent rounded-md sm:rounded-lg outline-none transition-all w-full placeholder:text-slate-200 text-center text-[11px] sm:text-xs min-w-[60px] text-slate-600" placeholder="-" readonly onclick="handleCellInteract(this, event)" onblur="handleCellBlur(this, '${item.id}', '${escapeHtml(col).replace(/'/g, "\\'")}')" onkeydown="handleCellKey(event, this)"></td>`;
+                    colHtml += `<td class="${cellBg} px-1 sm:px-2 py-1 border-b border-slate-100 border-r border-slate-100/50 whitespace-nowrap transition-colors text-center"><input type="text" data-index="${index}" data-col="${safeCol}" value="${escapeHtml(val)}" class="cell-input bg-transparent px-1 sm:px-2 py-1.5 sm:py-2 border border-transparent rounded-md sm:rounded-lg outline-none transition-all w-full placeholder:text-slate-200 text-center text-[11px] sm:text-xs min-w-[60px] text-slate-600" placeholder="-" readonly onclick="handleCellInteract(this, event, '${item.id}')" onblur="handleCellBlur(this, '${item.id}', '${safeCol}')" onkeydown="handleCellKey(event, this)"></td>`;
                 }
               });
               const tdRightClass = isStickyEnabled ? `sticky right-0 z-[35] shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.02)] ${stickyBgLeft} backdrop-blur-sm` : '';
               colHtml += `<td class="${tdRightClass} px-1 sm:px-2 py-1 border-b border-slate-100 border-l border-slate-200/80 whitespace-nowrap text-center transition-all duration-300 group-hover/tr:bg-indigo-50/90"><button onclick="deleteRowItem('${item.id}')" class="w-5 h-5 sm:w-7 sm:h-7 mx-auto flex items-center justify-center rounded-md text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/tr:opacity-100"><i class="fa-solid fa-trash-can text-[10px] sm:text-[11px]"></i></button></td>`;
               tr.innerHTML = colHtml;
+
+              // 🌟 针对性修复：如果重建了行，需要恢复该单元格的强亮选中边框
+              if (window.activeSelectedCell && window.activeSelectedCell.id === item.id) {
+                  const activeInput = tr.querySelector(`input[data-col="${window.activeSelectedCell.col}"]`);
+                  if (activeInput) activeInput.classList.add('cell-selected');
+              }
+
           } else {
-              tr.className = `transition-colors group/tr ${rowBg}`; 
+              // 🌟 现有行更新：重置背景色，但【坚决保留】刚才查到的 isHovered 高亮状态
+              tr.className = `transition-colors group/tr ${rowBg} ${isHovered ? 'pair-hover' : ''}`;
+              
               allColumns.forEach((col, idx) => {
                   const input = tr.cells[idx].querySelector('input');
                   if (input) {
