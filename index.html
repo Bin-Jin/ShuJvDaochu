@@ -9,7 +9,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
-    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { 
+      font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+      -webkit-tap-highlight-color: transparent; 
+      /* 🌟 开启字体抗锯齿与最佳可读性渲染，解决高分屏发虚问题 */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
     
     ::-webkit-scrollbar { height: 6px; width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; border-radius: 4px; }
@@ -48,7 +55,7 @@
     }
   </style>
 </head>
-<body class="bg-slate-50/50 text-slate-800 min-h-screen p-2 sm:p-4 md:p-6 lg:p-8 relative selection:bg-indigo-100 selection:text-indigo-900 overflow-x-hidden">
+<body class="bg-slate-50/50 text-slate-800 min-h-screen p-2 sm:p-4 md:p-6 lg:p-8 relative selection:bg-indigo-100 selection:text-indigo-900 overflow-x-hidden antialiased">
   
   <div id="imagePreviewModal" class="fixed inset-0 z-[200] hidden flex-col items-center justify-center bg-slate-900/90 backdrop-blur-md p-4 sm:p-8 transition-opacity" onclick="this.classList.add('hidden'); this.classList.remove('flex');">
     <button class="absolute top-4 right-4 sm:top-6 sm:right-8 text-white/60 hover:text-white text-3xl sm:text-4xl focus:outline-none transition-colors"><i class="fa-solid fa-xmark"></i></button>
@@ -68,18 +75,18 @@
     
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-xl p-4 sm:p-5 md:px-8 md:py-6 rounded-2xl md:rounded-3xl shadow-sm border border-slate-200/60 relative transition-all">
       <div>
-        <h1 class="text-xl sm:text-2xl font-extrabold flex items-center gap-2 sm:gap-3 tracking-tight flex-wrap">
-          <span class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 text-white shrink-0">
-            <i class="fa-solid fa-microscope text-[14px]"></i>
+        <h1 class="text-2xl sm:text-3xl font-extrabold flex items-center gap-2 sm:gap-3 tracking-tight flex-wrap">
+          <span class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 text-white shrink-0">
+            <i class="fa-solid fa-microscope text-base sm:text-lg"></i>
           </span>
           <span id="header-title" class="bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">光合仪</span> 
           <span class="text-slate-800">数据提取</span>
-          <span class="text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold border border-blue-100 whitespace-nowrap">双向平滑联动版</span>
+          <span class="text-xs sm:text-sm bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold border border-blue-100 whitespace-nowrap">双向平滑联动版</span>
         </h1>
-        <p class="text-[11px] sm:text-sm text-slate-500 mt-1.5 font-medium sm:ml-1 leading-relaxed">已开启双向视窗追踪引擎与点击高光保护。点击任意一侧，不仅会平滑跳转，高光还将永远烙印追踪该对象。</p>
+        <p class="text-xs sm:text-sm text-slate-500 mt-2 font-medium sm:ml-1 leading-relaxed">已开启双向视窗追踪引擎与点击高光保护。点击任意一侧，不仅会平滑跳转，高光还将永远烙印追踪该对象。</p>
       </div>
       <div class="flex items-center gap-3 shrink-0 w-full sm:w-auto">
-        <button id="clearAllBtn" class="w-full sm:w-auto px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
+        <button id="clearAllBtn" class="w-full sm:w-auto px-5 py-2.5 sm:py-3 text-sm sm:text-base font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
           <i class="fa-solid fa-broom"></i> 清空工作区
         </button>
       </div>
@@ -88,49 +95,49 @@
     <!-- API 配置区 -->
     <div class="bg-white p-4 sm:p-5 md:p-6 rounded-2xl md:rounded-3xl shadow-sm border border-slate-200/60 space-y-4 sm:space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-        <h2 class="text-sm sm:text-base font-bold text-slate-800 flex items-center gap-2">
-          <div class="w-6 h-6 rounded-md bg-indigo-50 flex items-center justify-center text-indigo-600">
-             <i class="fa-solid fa-bolt text-[11px]"></i>
+        <h2 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
+          <div class="w-8 h-8 rounded-md bg-indigo-50 flex items-center justify-center text-indigo-600">
+             <i class="fa-solid fa-bolt text-sm"></i>
           </div>
           智谱 GLM-4V 多并发引擎配置
         </h2>
-        <div class="flex items-center gap-1.5 sm:gap-2 self-start sm:self-auto bg-slate-100/80 p-1 rounded-xl border border-slate-200/60 flex-wrap">
-          <button id="btn-PAM" type="button" onclick="setInstrument('PAM')" class="text-indigo-700 font-bold bg-white px-3 py-1.5 rounded-lg border border-slate-200 flex items-center gap-1.5 shadow-sm transition-all text-[11px] sm:text-xs">
+        <div class="flex items-center gap-1.5 sm:gap-2 self-start sm:self-auto bg-slate-100/80 p-1.5 rounded-xl border border-slate-200/60 flex-wrap">
+          <button id="btn-PAM" type="button" onclick="setInstrument('PAM')" class="text-indigo-700 font-bold bg-white px-4 py-2 rounded-lg border border-slate-200 flex items-center gap-1.5 shadow-sm transition-all text-xs sm:text-sm">
             <i class="fa-brands fa-pagelines"></i> 🌿 光合仪区
           </button>
-          <button id="btn-NBI" type="button" onclick="setInstrument('NBI')" class="text-slate-500 hover:text-emerald-700 font-medium bg-transparent px-3 py-1.5 rounded-lg border border-transparent flex items-center gap-1.5 transition-all text-[11px] sm:text-xs">
+          <button id="btn-NBI" type="button" onclick="setInstrument('NBI')" class="text-slate-500 hover:text-emerald-700 font-medium bg-transparent px-4 py-2 rounded-lg border border-transparent flex items-center gap-1.5 transition-all text-xs sm:text-sm">
             <i class="fa-solid fa-leaf"></i> 🌱 氮平衡区
           </button>
         </div>
       </div>
       
-      <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 sm:gap-5">
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 sm:gap-6">
         <div>
-          <label class="block text-[10px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">接口地址 (Base URL)</label>
-          <input type="text" id="apiBaseUrl" class="w-full text-xs sm:text-sm bg-slate-50 px-3 py-2 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition-all text-slate-700 font-mono" readonly value="https://open.bigmodel.cn/api/paas/v4">
+          <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">接口地址 (Base URL)</label>
+          <input type="text" id="apiBaseUrl" class="w-full text-sm sm:text-base bg-slate-50 px-4 py-2.5 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition-all text-slate-700 font-mono" readonly value="https://open.bigmodel.cn/api/paas/v4">
         </div>
         <div>
-          <label class="block text-[10px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider">视觉模型 (Model)</label>
-          <input type="text" id="apiModel" class="w-full text-xs sm:text-sm bg-slate-50 px-3 py-2 border border-slate-200 rounded-xl outline-none transition-all font-bold text-slate-700 font-mono" readonly value="glm-4v-flash">
+          <label class="block text-xs font-bold text-slate-600 mb-1.5 uppercase tracking-wider">视觉模型 (Model)</label>
+          <input type="text" id="apiModel" class="w-full text-sm sm:text-base bg-slate-50 px-4 py-2.5 border border-slate-200 rounded-xl outline-none transition-all font-bold text-slate-700 font-mono" readonly value="glm-4v-flash">
         </div>
         <div class="sm:col-span-2">
           <div class="flex items-center justify-between mb-1.5 flex-wrap gap-1">
-            <label class="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider">
+            <label class="text-xs font-bold text-indigo-600 uppercase tracking-wider">
               API 密钥轮询池 <span class="font-normal text-slate-400">(多个Key用逗号 , 隔开)</span>
             </label>
-            <span id="concurrencyBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1.5 bg-slate-100 text-slate-500 transition-all border border-slate-200">
-              <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 未配置
+            <span id="concurrencyBadge" class="text-[11px] sm:text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 bg-slate-100 text-slate-500 transition-all border border-slate-200">
+              <span class="w-2 h-2 rounded-full bg-slate-400"></span> 未配置
             </span>
           </div>
-          <input type="text" id="apiKey" placeholder="例如: key1, key2, key3..." class="w-full text-xs sm:text-sm bg-indigo-50/30 px-3 py-2 border border-indigo-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all text-slate-800 font-mono shadow-inner font-bold">
+          <input type="text" id="apiKey" placeholder="例如: key1, key2, key3..." class="w-full text-sm sm:text-base bg-indigo-50/30 px-4 py-2.5 border border-indigo-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all text-slate-800 font-mono shadow-inner font-bold">
         </div>
       </div>
 
       <div class="pt-4 sm:pt-5 border-t border-slate-100">
-        <label class="block text-[11px] sm:text-xs font-bold text-slate-700 mb-2 flex items-center gap-2">
+        <label class="block text-xs sm:text-sm font-bold text-slate-700 mb-2 flex items-center gap-2">
           <i class="fa-solid fa-crosshairs text-slate-400"></i> 目标提取指标列表
         </label>
-        <textarea id="targetHeadersInput" rows="2" class="w-full text-[11px] sm:text-sm font-mono leading-relaxed px-3 sm:px-4 py-2 sm:py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition-all text-slate-600" placeholder="加载中..."></textarea>
+        <textarea id="targetHeadersInput" rows="2" class="w-full text-sm sm:text-base font-mono leading-relaxed px-4 sm:px-5 py-3 sm:py-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition-all text-slate-700" placeholder="加载中..."></textarea>
       </div>
     </div>
 
@@ -138,29 +145,29 @@
     <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 relative lg:h-[70vh] lg:min-h-[600px] lg:max-h-[850px]">
       
       <!-- 左侧：队列面板 -->
-      <div class="flex flex-col w-full lg:w-[320px] xl:w-[380px] shrink-0 h-[500px] min-h-[500px] sm:h-[600px] sm:min-h-[600px] lg:h-full lg:min-h-0 space-y-4 sm:space-y-5">
+      <div class="flex flex-col w-full lg:w-[360px] xl:w-[420px] shrink-0 h-[500px] min-h-[500px] sm:h-[600px] sm:min-h-[600px] lg:h-full lg:min-h-0 space-y-4 sm:space-y-5">
         
-        <div id="clickUploadZone" class="bg-gradient-to-b from-slate-50 to-white border border-dashed border-slate-300 hover:border-indigo-400 transition-all duration-300 py-5 sm:py-6 rounded-2xl sm:rounded-3xl flex flex-col items-center justify-center text-center cursor-pointer relative overflow-hidden group hover:shadow-md hover:shadow-indigo-500/5 active:scale-[0.98] shrink-0">
+        <div id="clickUploadZone" class="bg-gradient-to-b from-slate-50 to-white border border-dashed border-slate-300 hover:border-indigo-400 transition-all duration-300 py-6 sm:py-8 rounded-2xl sm:rounded-3xl flex flex-col items-center justify-center text-center cursor-pointer relative overflow-hidden group hover:shadow-md hover:shadow-indigo-500/5 active:scale-[0.98] shrink-0">
           <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
-          <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white text-indigo-500 rounded-xl sm:rounded-2xl flex items-center justify-center text-lg sm:text-xl mb-2 sm:mb-3 shadow-sm border border-slate-100 transition-transform duration-300 group-hover:-translate-y-1">
+          <div class="w-12 h-12 sm:w-14 sm:h-14 bg-white text-indigo-500 rounded-xl sm:rounded-2xl flex items-center justify-center text-xl sm:text-2xl mb-3 sm:mb-4 shadow-sm border border-slate-100 transition-transform duration-300 group-hover:-translate-y-1">
             <i class="fa-solid fa-cloud-arrow-up"></i>
           </div>
-          <h3 class="font-bold text-slate-700 text-xs sm:text-sm mb-1">导入图表文件</h3>
-          <p class="text-slate-400 text-[9px] sm:text-[10px] font-medium px-4">支持移动端多图批量与 4K 长截图提取</p>
+          <h3 class="font-bold text-slate-700 text-sm sm:text-base mb-1.5">导入图表文件</h3>
+          <p class="text-slate-400 text-xs sm:text-sm font-medium px-4">支持移动端多图批量与 4K 长截图提取</p>
         </div>
 
-        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-sm p-3 sm:p-4 flex flex-col flex-1 overflow-hidden min-h-0">
-          <div class="flex items-center justify-between pb-2 sm:pb-3 border-b border-slate-100 shrink-0">
-            <span class="text-[11px] sm:text-sm font-bold text-slate-800 flex items-center gap-2">
+        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-sm p-4 sm:p-5 flex flex-col flex-1 overflow-hidden min-h-0">
+          <div class="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-100 shrink-0">
+            <span class="text-sm sm:text-base font-bold text-slate-800 flex items-center gap-2">
               <i class="fa-solid fa-list-check text-slate-400"></i> 解析队列
             </span>
-            <span id="fileCountBadge" class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md tracking-wider">0 项</span>
+            <span id="fileCountBadge" class="text-xs sm:text-sm font-bold px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md tracking-wider">0 项</span>
           </div>
-          <div class="flex-1 relative min-h-0 w-full mt-2">
-            <div id="fileList" class="absolute inset-0 divide-y divide-slate-50 overflow-y-auto pb-2 pr-1 space-y-1 scroll-smooth">
-              <div id="emptyListTip" class="h-full flex flex-col items-center justify-center text-slate-300 gap-2 sm:gap-3 opacity-60 py-4">
-                <i class="fa-regular fa-folder-open text-2xl sm:text-3xl mb-1"></i>
-                <p class="text-[10px] sm:text-xs font-medium">暂无待处理文件</p>
+          <div class="flex-1 relative min-h-0 w-full mt-3">
+            <div id="fileList" class="absolute inset-0 divide-y divide-slate-50 overflow-y-auto pb-2 pr-2 space-y-2 scroll-smooth">
+              <div id="emptyListTip" class="h-full flex flex-col items-center justify-center text-slate-300 gap-3 sm:gap-4 opacity-60 py-6">
+                <i class="fa-regular fa-folder-open text-4xl sm:text-5xl mb-2"></i>
+                <p class="text-xs sm:text-sm font-medium">暂无待处理文件</p>
               </div>
             </div>
           </div>
@@ -169,38 +176,38 @@
 
       <!-- 右侧：数据表格区 -->
       <div class="w-full lg:flex-1 min-w-0 flex flex-col h-[500px] min-h-[500px] sm:h-[600px] sm:min-h-[600px] lg:h-full lg:min-h-0">
-        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-sm p-3 sm:p-5 flex flex-col flex-1 relative overflow-hidden min-h-0">
+        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-sm p-4 sm:p-6 flex flex-col flex-1 relative overflow-hidden min-h-0">
           
-          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4 shrink-0">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4 sm:mb-5 shrink-0">
             <div>
-              <h2 class="font-extrabold text-slate-800 text-sm sm:text-lg tracking-tight">可视化数据预览</h2>
-              <p class="text-[9px] sm:text-[11px] text-slate-500 mt-1 font-medium leading-tight">点击队列或表格任意对象皆可实现<span class="text-indigo-500 font-bold">高光锁定</span>并双向视窗跳转。</p>
+              <h2 class="font-extrabold text-slate-800 text-base sm:text-xl tracking-tight">可视化数据预览</h2>
+              <p class="text-xs sm:text-sm text-slate-500 mt-1.5 font-medium leading-tight">点击队列或表格任意对象皆可实现<span class="text-indigo-500 font-bold">高光锁定</span>并双向视窗跳转。</p>
             </div>
             
-            <div class="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
-              <button id="toggleRowStickyBtn" onclick="toggleRowSticky()" class="flex-1 sm:flex-none px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[10px] sm:text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 border border-slate-200 shrink-0">
+            <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+              <button id="toggleRowStickyBtn" onclick="toggleRowSticky()" class="flex-1 sm:flex-none px-4 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-200 shrink-0">
                 <i class="fa-solid fa-lock text-slate-400"></i> 解除首行冻结
               </button>
-              <button id="toggleStickyBtn" onclick="toggleSticky()" class="flex-1 sm:flex-none px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[10px] sm:text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 border border-slate-200 shrink-0">
+              <button id="toggleStickyBtn" onclick="toggleSticky()" class="flex-1 sm:flex-none px-4 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-200 shrink-0">
                 <i class="fa-solid fa-lock text-slate-400"></i> 解除列冻结
               </button>
-              <button id="exportCsvBtn" disabled class="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[11px] sm:text-xs font-bold rounded-xl shadow-sm transition-all duration-300 flex items-center justify-center gap-2 shrink-0 border border-emerald-400/50">
+              <button id="exportCsvBtn" disabled class="w-full sm:w-auto px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition-all duration-300 flex items-center justify-center gap-2 shrink-0 border border-emerald-400/50">
                 <i class="fa-regular fa-file-excel"></i> 导出 Excel
               </button>
             </div>
           </div>
 
-          <div class="flex-1 relative min-h-0 w-full mt-1">
+          <div class="flex-1 relative min-h-0 w-full mt-2">
             <div class="absolute inset-0 overflow-auto rounded-xl border border-slate-200/60 bg-slate-50/50 shadow-inner scroll-smooth" id="tableWrapper">
               
               <div id="tablePlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 z-10 bg-white/50 backdrop-blur-sm transition-opacity">
-                <div class="w-10 h-10 sm:w-14 sm:h-14 bg-slate-100 rounded-xl flex items-center justify-center mb-2 sm:mb-3 shadow-sm border border-slate-200/50">
-                  <i class="fa-solid fa-table-list text-xl sm:text-2xl text-slate-300"></i>
+                <div class="w-12 h-12 sm:w-16 sm:h-16 bg-slate-100 rounded-2xl flex items-center justify-center mb-3 sm:mb-4 shadow-sm border border-slate-200/50">
+                  <i class="fa-solid fa-table-list text-2xl sm:text-3xl text-slate-300"></i>
                 </div>
-                <p class="text-[10px] sm:text-xs font-medium">数据表将在此处生成</p>
+                <p class="text-xs sm:text-sm font-medium">数据表将在此处生成</p>
               </div>
               
-              <table id="dataTable" class="w-full text-[10px] sm:text-xs text-center hidden relative select-none">
+              <table id="dataTable" class="w-full text-xs sm:text-sm text-center hidden relative select-none">
                 <thead id="tableHead"></thead>
                 <tbody id="tableBody" class="font-mono text-slate-700 bg-white relative"></tbody>
               </table>
@@ -327,13 +334,37 @@
       const title = document.getElementById('header-title');
 
       if (currentMode === 'PAM') {
-          btnPAM.className = "text-indigo-700 font-bold bg-white px-3 py-1.5 rounded-lg border border-slate-200 flex items-center gap-1.5 shadow-sm transition-all text-[11px] sm:text-xs";
-          btnNBI.className = "text-slate-500 hover:text-emerald-700 font-medium bg-transparent px-3 py-1.5 rounded-lg border border-transparent flex items-center gap-1.5 transition-all text-[11px] sm:text-xs";
+          btnPAM.className = "text-indigo-700 font-bold bg-white px-4 py-2 rounded-lg border border-slate-200 flex items-center gap-1.5 shadow-sm transition-all text-xs sm:text-sm";
+          btnNBI.className = "text-slate-500 hover:text-emerald-700 font-medium bg-transparent px-4 py-2 rounded-lg border border-transparent flex items-center gap-1.5 transition-all text-xs sm:text-sm";
           title.innerText = "光合仪";
       } else {
-          btnNBI.className = "text-emerald-700 font-bold bg-white px-3 py-1.5 rounded-lg border border-slate-200 flex items-center gap-1.5 shadow-sm transition-all text-[11px] sm:text-xs";
-          btnPAM.className = "text-slate-500 hover:text-indigo-700 font-medium bg-transparent px-3 py-1.5 rounded-lg border border-transparent flex items-center gap-1.5 transition-all text-[11px] sm:text-xs";
+          btnNBI.className = "text-emerald-700 font-bold bg-white px-4 py-2 rounded-lg border border-slate-200 flex items-center gap-1.5 shadow-sm transition-all text-xs sm:text-sm";
+          btnPAM.className = "text-slate-500 hover:text-indigo-700 font-medium bg-transparent px-4 py-2 rounded-lg border border-transparent flex items-center gap-1.5 transition-all text-xs sm:text-sm";
           title.innerText = "氮平衡仪";
+      }
+    }
+
+    function updateStickyBtnUI() {
+      const btn = document.getElementById('toggleStickyBtn');
+      if (!btn) return;
+      if (isStickyEnabled) {
+          btn.innerHTML = '<i class="fa-solid fa-unlock text-slate-400"></i> 解除列冻结';
+          btn.className = "flex-1 sm:flex-none px-4 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-200 shrink-0";
+      } else {
+          btn.innerHTML = '<i class="fa-solid fa-lock text-indigo-500"></i> 冻结首尾列';
+          btn.className = "flex-1 sm:flex-none px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs sm:text-sm font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 border border-indigo-200 shrink-0";
+      }
+    }
+
+    function updateRowStickyBtnUI() {
+      const btn = document.getElementById('toggleRowStickyBtn');
+      if (!btn) return;
+      if (isRowStickyEnabled) {
+          btn.innerHTML = '<i class="fa-solid fa-unlock text-slate-400"></i> 解除首行冻结';
+          btn.className = "flex-1 sm:flex-none px-4 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center justify-center gap-2 border border-slate-200 shrink-0";
+      } else {
+          btn.innerHTML = '<i class="fa-solid fa-lock text-indigo-500"></i> 冻结首行';
+          btn.className = "flex-1 sm:flex-none px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs sm:text-sm font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 border border-indigo-200 shrink-0";
       }
     }
 
@@ -401,14 +432,14 @@
       const count = keys.length;
 
       if (count === 0) {
-        badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1.5 bg-slate-100 text-slate-500 transition-all border border-slate-200";
-        badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 未配置`;
+        badge.className = "text-[11px] sm:text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 bg-slate-100 text-slate-500 transition-all border border-slate-200";
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-slate-400"></span> 未配置`;
       } else if (count === 1) {
-        badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1.5 bg-indigo-50 text-indigo-600 transition-all border border-indigo-200";
-        badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span> 单线程 (1)`;
+        badge.className = "text-[11px] sm:text-xs font-bold px-2.5 py-1 rounded-full flex items-center gap-1.5 bg-indigo-50 text-indigo-600 transition-all border border-indigo-200";
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span> 单线程 (1)`;
       } else {
-        badge.className = "text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1.5 bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-sm shadow-indigo-500/20 transition-all border border-indigo-400";
-        badge.innerHTML = `<i class="fa-solid fa-bolt text-[9px] animate-bounce"></i> ${count} 线程并发 (${count})`;
+        badge.className = "text-[11px] sm:text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1.5 bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-sm shadow-indigo-500/20 transition-all border border-indigo-400";
+        badge.innerHTML = `<i class="fa-solid fa-bolt text-[10px] sm:text-xs animate-bounce"></i> ${count} 线程并发 (${count})`;
       }
     }
 
@@ -1009,28 +1040,26 @@ ${specialNote}
       div.id = `queue_${item.id}`;
       div.setAttribute('onmouseenter', `highlightPair('${item.id}', true)`);
       div.setAttribute('onmouseleave', `highlightPair('${item.id}', false)`);
-      
-      // 初始化时检查是否应该是 locked 状态
-      const isLocked = window.lockedPairId === item.id;
-      div.className = `py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl transition-all duration-200 flex items-center justify-between gap-1.5 sm:gap-2 group/item hover:bg-slate-50 border border-transparent hover:border-slate-100 fade-in-row mt-1 ${isLocked ? 'pair-locked' : ''}`;
+      div.className = 'py-3 sm:py-4 px-3 sm:px-4 rounded-xl transition-all duration-200 flex items-center justify-between gap-2 sm:gap-3 group/item hover:bg-slate-50 border border-transparent hover:border-slate-100 fade-in-row mt-1.5';
       
       const imgHtml = item.thumb 
-        ? `<img src="${item.thumb}" class="w-6 h-6 sm:w-8 sm:h-8 rounded-md object-cover cursor-zoom-in hover:opacity-80 border border-slate-200 shadow-sm shrink-0 transition-opacity" onclick="previewImage('${item.id}')" title="点击预览原图" alt="缩略图">`
-        : `<div onclick="previewImage('${item.id}')" class="w-6 h-6 sm:w-8 sm:h-8 rounded-md bg-indigo-50 text-indigo-400 flex items-center justify-center shrink-0 cursor-zoom-in hover:opacity-80 transition-opacity" title="点击预览原图"><i class="fa-regular fa-image text-[9px] sm:text-xs"></i></div>`;
+        ? `<img src="${item.thumb}" class="w-10 h-10 sm:w-12 sm:h-12 rounded-md object-cover cursor-zoom-in hover:opacity-80 border border-slate-200 shadow-sm shrink-0 transition-opacity" onclick="previewImage('${item.id}')" title="点击预览原图" alt="缩略图">`
+        : `<div onclick="previewImage('${item.id}')" class="w-10 h-10 sm:w-12 sm:h-12 rounded-md bg-indigo-50 text-indigo-400 flex items-center justify-center shrink-0 cursor-zoom-in hover:opacity-80 transition-opacity" title="点击预览原图"><i class="fa-regular fa-image text-xs sm:text-base"></i></div>`;
 
       div.innerHTML = `
-        <div class="flex items-center gap-1.5 sm:gap-3 flex-1 min-w-0 pr-1">
+        <div class="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 pr-2">
           ${imgHtml}
           <div class="flex-1 min-w-0">
+            <!-- 🌟 进一步放大左侧队列对象的字号 -->
             <input type="text" data-col="样本名称" value="${escapeHtml(item.customName)}" title="${escapeHtml(item.customName)}" 
-                   class="name-input cell-input text-[11px] sm:text-xs font-bold text-slate-700 bg-transparent hover:bg-white focus:bg-white px-1 sm:px-2 py-1 sm:py-1.5 border border-transparent rounded-md outline-none w-full transition-all truncate"
+                   class="name-input cell-input text-sm sm:text-base font-bold text-slate-800 bg-transparent hover:bg-white focus:bg-white px-2 sm:px-3 py-2 border border-transparent rounded-lg outline-none w-full transition-all truncate"
                    readonly
                    onclick="handleCellInteract(this, event, '${item.id}')"
                    onblur="handleQueueNameBlur(this, '${item.id}')"
                    onkeydown="handleCellKey(event, this)">
           </div>
         </div>
-        <div class="status-box flex items-center gap-1 sm:gap-2 shrink-0 font-medium ml-1"></div>
+        <div class="status-box flex items-center gap-1.5 sm:gap-2.5 shrink-0 font-medium ml-2"></div>
       `;
       fileList.appendChild(div);
       updateQueueItemUI(item);
@@ -1040,22 +1069,22 @@ ${specialNote}
       const el = document.getElementById(`queue_${item.id}`);
       if (!el) return;
       const statusBox = el.querySelector('.status-box');
-      const deleteBtn = `<button onclick="deleteRowItem('${item.id}')" title="删除记录" class="w-5 h-5 sm:w-7 sm:h-7 rounded-md flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/item:opacity-100"><i class="fa-solid fa-trash-can"></i></button>`;
+      const deleteBtn = `<button onclick="deleteRowItem('${item.id}')" title="删除记录" class="w-7 h-7 sm:w-8 sm:h-8 rounded-md flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/item:opacity-100"><i class="fa-solid fa-trash-can text-sm sm:text-base"></i></button>`;
 
       if (item.status === 'pending') {
-        statusBox.innerHTML = `<span class="text-[9px] sm:text-xs text-slate-400 flex items-center gap-1"><i class="fa-solid fa-spinner fa-spin text-indigo-400"></i> 排队中</span> ${deleteBtn}`;
+        statusBox.innerHTML = `<span class="text-[11px] sm:text-sm text-slate-400 flex items-center gap-1.5"><i class="fa-solid fa-spinner fa-spin text-indigo-400"></i> 排队中</span> ${deleteBtn}`;
       } else if (item.status === 'processing') {
-        statusBox.innerHTML = `<span class="text-[9px] sm:text-xs text-indigo-600 flex items-center gap-1 bg-indigo-50 px-1.5 py-0.5 sm:py-1 rounded-md"><i class="fa-solid fa-microscope text-indigo-500 animate-pulse"></i> 提取中</span>`;
+        statusBox.innerHTML = `<span class="text-[11px] sm:text-sm text-indigo-600 flex items-center gap-1.5 bg-indigo-50 px-2 py-1 sm:py-1.5 rounded-md"><i class="fa-solid fa-microscope text-indigo-500 animate-pulse"></i> 提取中</span>`;
       } else if (item.status === 'success') {
         statusBox.innerHTML = `
-          <button onclick="retryItem('${item.id}')" title="重新识别" class="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-100 px-1 py-0.5 sm:py-1 rounded transition-all text-[9px] sm:text-[10px] font-semibold flex items-center gap-1 opacity-0 group-hover/item:opacity-100"><i class="fa-solid fa-rotate-right"></i> 重试</button>
-          <span class="text-[9px] sm:text-xs text-emerald-600 flex items-center gap-1 bg-emerald-50 px-1.5 py-0.5 sm:py-1 rounded-md"><i class="fa-solid fa-check text-emerald-500"></i> 成功</span> 
+          <button onclick="retryItem('${item.id}')" title="重新识别" class="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-100 px-1.5 py-1 sm:py-1.5 rounded transition-all text-[10px] sm:text-xs font-semibold flex items-center gap-1 opacity-0 group-hover/item:opacity-100"><i class="fa-solid fa-rotate-right"></i> 重试</button>
+          <span class="text-[11px] sm:text-sm text-emerald-600 flex items-center gap-1.5 bg-emerald-50 px-2 py-1 sm:py-1.5 rounded-md"><i class="fa-solid fa-check text-emerald-500"></i> 成功</span> 
           ${deleteBtn}`;
       } else if (item.status === 'error') {
-        statusBox.innerHTML = `<button onclick="retryItem('${item.id}')" class="text-indigo-600 hover:text-white hover:bg-indigo-500 border border-indigo-200 px-1.5 py-0.5 sm:py-1 rounded transition-all shadow-sm text-[9px] sm:text-[10px]">重试</button>
+        statusBox.innerHTML = `<button onclick="retryItem('${item.id}')" class="text-indigo-600 hover:text-white hover:bg-indigo-500 border border-indigo-200 px-2 py-1 sm:py-1.5 rounded transition-all shadow-sm text-[10px] sm:text-xs">重试</button>
                                <div class="relative group/tooltip">
-                                 <span class="text-[9px] sm:text-xs text-rose-600 flex items-center gap-1 cursor-help bg-rose-50 px-1.5 py-0.5 sm:py-1 rounded-md"><i class="fa-solid fa-triangle-exclamation"></i> 失败</span>
-                                 <div class="absolute right-0 bottom-full mb-2 hidden group-hover/tooltip:block w-48 sm:w-56 p-2 sm:p-2.5 bg-slate-800 text-white text-[10px] sm:text-[11px] leading-relaxed rounded-lg shadow-xl z-50 break-words font-normal">${escapeHtml(item.errorMsg)}</div>
+                                 <span class="text-[11px] sm:text-sm text-rose-600 flex items-center gap-1.5 cursor-help bg-rose-50 px-2 py-1 sm:py-1.5 rounded-md"><i class="fa-solid fa-triangle-exclamation"></i> 失败</span>
+                                 <div class="absolute right-0 bottom-full mb-2 hidden group-hover/tooltip:block w-56 sm:w-64 p-3 bg-slate-800 text-white text-xs sm:text-sm leading-relaxed rounded-xl shadow-xl z-50 break-words font-normal">${escapeHtml(item.errorMsg)}</div>
                                </div>
                                ${deleteBtn}`;
       }
@@ -1101,7 +1130,7 @@ ${specialNote}
       }
       tablePlaceholder.classList.add('hidden'); dataTable.classList.remove('hidden');
 
-      const baseHeadClass = "bg-slate-100/95 backdrop-blur-md text-slate-600 shadow-sm border-slate-200 transition-all duration-300";
+      const baseHeadClass = "bg-slate-100/95 backdrop-blur-md text-slate-700 shadow-sm border-slate-200 transition-all duration-300";
       const theadElement = document.getElementById('tableHead');
       if (isRowStickyEnabled) {
           theadElement.className = `${baseHeadClass} sticky top-0 z-[60]`;
@@ -1117,17 +1146,18 @@ ${specialNote}
         const headBg = idx % 2 === 1 ? 'bg-slate-200/50' : 'bg-slate-100/90';
         if (col === "样本名称") {
            const thLeftClass = isStickyEnabled ? stickyClassHeadLeft : headBg;
-           headHtml += `<th class="${thLeftClass} px-2 sm:px-4 py-2 sm:py-3.5 font-bold text-slate-800 whitespace-nowrap border-b border-slate-200 border-r border-slate-200/80 tracking-wide text-[10px] sm:text-xs text-center min-w-[90px] sm:min-w-[140px] transition-all duration-300"><span>${escapeHtml(col)}</span></th>`;
+           /* 🌟 放大表头字号 text-sm sm:text-base 并拓宽列宽 */
+           headHtml += `<th class="${thLeftClass} px-3 sm:px-5 py-3 sm:py-4 font-extrabold text-slate-800 whitespace-nowrap border-b border-slate-200 border-r border-slate-200/80 tracking-wide text-sm sm:text-base text-center min-w-[120px] sm:min-w-[180px] transition-all duration-300"><span>${escapeHtml(col)}</span></th>`;
         } else {
-           headHtml += `<th class="px-2 sm:px-4 py-2 sm:py-3.5 font-bold text-slate-700 whitespace-nowrap ${headBg} backdrop-blur-sm border-b border-slate-200 border-r border-slate-200/50 z-30 tracking-wide text-[10px] sm:text-xs text-center min-w-[90px] sm:min-w-[130px]">
-              <div class="flex items-center justify-center gap-1 sm:gap-2 relative">
+           headHtml += `<th class="px-3 sm:px-5 py-3 sm:py-4 font-bold text-slate-700 whitespace-nowrap ${headBg} backdrop-blur-sm border-b border-slate-200 border-r border-slate-200/50 z-30 tracking-wide text-sm sm:text-base text-center min-w-[120px] sm:min-w-[160px]">
+              <div class="flex items-center justify-center gap-1.5 sm:gap-2 relative">
                 <span>${escapeHtml(col)}</span>
-                <button onclick="deleteColumn('${escapeHtml(col).replace(/'/g, "\\'")}')" class="absolute right-0 w-4 h-4 flex items-center justify-center rounded text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/th:opacity-100"><i class="fa-solid fa-xmark text-[9px] sm:text-[10px]"></i></button>
+                <button onclick="deleteColumn('${escapeHtml(col).replace(/'/g, "\\'")}')" class="absolute right-0 w-5 h-5 flex items-center justify-center rounded text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/th:opacity-100"><i class="fa-solid fa-xmark text-xs sm:text-sm"></i></button>
               </div>
             </th>`;
         }
       });
-      headHtml += `<th class="${stickyClassHeadRight} px-2 sm:px-4 py-2 sm:py-3.5 font-bold text-slate-500 whitespace-nowrap border-b border-slate-200 border-l border-slate-200/80 text-center w-10 sm:w-14 text-[10px] sm:text-xs transition-all duration-300">操作</th></tr>`;
+      headHtml += `<th class="${stickyClassHeadRight} px-3 sm:px-5 py-3 sm:py-4 font-bold text-slate-500 whitespace-nowrap border-b border-slate-200 border-l border-slate-200/80 text-center w-14 sm:w-20 text-sm sm:text-base transition-all duration-300">操作</th></tr>`;
 
       if (tableHead.innerHTML !== headHtml) tableHead.innerHTML = headHtml;
 
@@ -1142,8 +1172,7 @@ ${specialNote}
           const rowBg = index % 2 === 0 ? 'bg-white' : 'bg-slate-50/60';
           const stickyBgLeft = index % 2 === 0 ? 'bg-white/95' : 'bg-slate-50/95'; 
           
-          // 判定这行是否被锁定了
-          const isLocked = window.lockedPairId === item.id;
+          const isHovered = (window.activeHoverId === item.id) || (tr && tr.classList.contains('pair-hover'));
 
           if (!tr || tr.cells.length !== allColumns.length + 1 || tr.dataset.sticky !== String(isStickyEnabled)) {
               if (!tr) {
@@ -1152,7 +1181,7 @@ ${specialNote}
               }
               tr.dataset.sticky = String(isStickyEnabled);
               
-              tr.className = `transition-colors fade-in-row group/tr ${rowBg} ${isLocked ? 'pair-locked' : ''}`;
+              tr.className = `transition-colors fade-in-row group/tr ${rowBg} ${isHovered ? 'pair-hover' : ''}`;
               tr.setAttribute('onmouseenter', `highlightPair('${item.id}', true)`);
               tr.setAttribute('onmouseleave', `highlightPair('${item.id}', false)`);
 
@@ -1162,14 +1191,16 @@ ${specialNote}
                 const safeCol = escapeHtml(col).replace(/'/g, "\\'"); 
                 if (col === "样本名称") {
                     const tdLeftClass = isStickyEnabled ? `sticky left-0 z-[35] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.02)] ${stickyBgLeft} backdrop-blur-sm` : cellBg;
-                    colHtml += `<td class="relative ${tdLeftClass} px-1 sm:px-2 py-1 font-sans border-b border-slate-100 border-r border-slate-200/80 whitespace-nowrap transition-all duration-300"><input type="text" data-index="${index}" data-col="样本名称" value="${escapeHtml(item.customName)}" title="${escapeHtml(item.customName)}" class="cell-input bg-transparent px-1 sm:px-2 py-1.5 sm:py-2 border border-transparent rounded-md sm:rounded-lg outline-none transition-all w-full text-center text-[11px] sm:text-xs min-w-[75px] font-bold text-slate-800" readonly onclick="handleCellInteract(this, event, '${item.id}')" onblur="handleCellBlur(this, '${item.id}', '样本名称')" onkeydown="handleCellKey(event, this)"></td>`;
+                    /* 🌟 放大单元格字号并加粗 text-sm sm:text-base */
+                    colHtml += `<td class="relative ${tdLeftClass} px-3 sm:px-4 py-2 sm:py-3 font-sans border-b border-slate-100 border-r border-slate-200/80 whitespace-nowrap transition-all duration-300"><input type="text" data-index="${index}" data-col="样本名称" value="${escapeHtml(item.customName)}" title="${escapeHtml(item.customName)}" class="cell-input bg-transparent px-2 sm:px-3 py-2 sm:py-2.5 border border-transparent rounded-lg outline-none transition-all w-full text-center text-sm sm:text-base min-w-[100px] font-bold text-slate-800" readonly onclick="handleCellInteract(this, event, '${item.id}')" onblur="handleCellBlur(this, '${item.id}', '样本名称')" onkeydown="handleCellKey(event, this)"></td>`;
                 } else {
                     const val = item.data[col] !== undefined ? item.data[col] : '';
-                    colHtml += `<td class="${cellBg} px-1 sm:px-2 py-1 border-b border-slate-100 border-r border-slate-100/50 whitespace-nowrap transition-colors text-center"><input type="text" data-index="${index}" data-col="${safeCol}" value="${escapeHtml(val)}" class="cell-input bg-transparent px-1 sm:px-2 py-1.5 sm:py-2 border border-transparent rounded-md sm:rounded-lg outline-none transition-all w-full placeholder:text-slate-200 text-center text-[11px] sm:text-xs min-w-[60px] text-slate-600" placeholder="-" readonly onclick="handleCellInteract(this, event, '${item.id}')" onblur="handleCellBlur(this, '${item.id}', '${safeCol}')" onkeydown="handleCellKey(event, this)"></td>`;
+                    /* 🌟 加深数据文字颜色，并放大字号 text-sm sm:text-base */
+                    colHtml += `<td class="${cellBg} px-3 sm:px-4 py-2 sm:py-3 border-b border-slate-100 border-r border-slate-100/50 whitespace-nowrap transition-colors text-center"><input type="text" data-index="${index}" data-col="${safeCol}" value="${escapeHtml(val)}" class="cell-input bg-transparent px-2 sm:px-3 py-2 sm:py-2.5 border border-transparent rounded-lg outline-none transition-all w-full placeholder:text-slate-300 text-center text-sm sm:text-base min-w-[90px] text-slate-800 font-medium" placeholder="-" readonly onclick="handleCellInteract(this, event, '${item.id}')" onblur="handleCellBlur(this, '${item.id}', '${safeCol}')" onkeydown="handleCellKey(event, this)"></td>`;
                 }
               });
               const tdRightClass = isStickyEnabled ? `sticky right-0 z-[35] shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.02)] ${stickyBgLeft} backdrop-blur-sm` : '';
-              colHtml += `<td class="${tdRightClass} px-1 sm:px-2 py-1 border-b border-slate-100 border-l border-slate-200/80 whitespace-nowrap text-center transition-all duration-300 group-hover/tr:bg-indigo-50/90"><button onclick="deleteRowItem('${item.id}')" class="w-5 h-5 sm:w-7 sm:h-7 mx-auto flex items-center justify-center rounded-md text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/tr:opacity-100"><i class="fa-solid fa-trash-can text-[10px] sm:text-[11px]"></i></button></td>`;
+              colHtml += `<td class="${tdRightClass} px-3 sm:px-4 py-2 sm:py-3 border-b border-slate-100 border-l border-slate-200/80 whitespace-nowrap text-center transition-all duration-300 group-hover/tr:bg-indigo-50/90"><button onclick="deleteRowItem('${item.id}')" class="w-8 h-8 sm:w-10 sm:h-10 mx-auto flex items-center justify-center rounded-lg text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all opacity-0 group-hover/tr:opacity-100"><i class="fa-solid fa-trash-can text-sm sm:text-base"></i></button></td>`;
               tr.innerHTML = colHtml;
 
               if (window.activeSelectedCell && window.activeSelectedCell.id === item.id) {
@@ -1178,7 +1209,7 @@ ${specialNote}
               }
 
           } else {
-              tr.className = `transition-colors group/tr ${rowBg} ${isLocked ? 'pair-locked' : ''}`;
+              tr.className = `transition-colors group/tr ${rowBg} ${isHovered ? 'pair-hover' : ''}`;
               
               allColumns.forEach((col, idx) => {
                   const input = tr.cells[idx].querySelector('input');
