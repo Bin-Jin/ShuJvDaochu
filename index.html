@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>仪器数据提取工作站 - 智谱专版</title>
+  <title>仪器数据提取工作站 - 智谱多核并发版</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -22,7 +22,6 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* 🌟 全局双向高光联动追踪样式 */
     .pair-hover {
       background-color: #eef2ff !important;
       box-shadow: inset 0 0 0 1px #818cf8 !important;
@@ -33,7 +32,6 @@
     tr.pair-hover td:first-child { border-top-left-radius: 0.5rem; border-bottom-left-radius: 0.5rem; }
     tr.pair-hover td:last-child { border-top-right-radius: 0.5rem; border-bottom-right-radius: 0.5rem; }
     
-    /* 🌟 单元格交互样式：防键盘误触体系 */
     table { border-collapse: separate !important; border-spacing: 0; }
     .cell-selected {
         background-color: #e0e7ff !important;
@@ -66,7 +64,6 @@
 
   <div class="max-w-[1600px] mx-auto space-y-4 sm:space-y-6">
     
-    <!-- 顶部极简标题栏 -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-xl p-4 sm:p-5 md:px-8 md:py-6 rounded-2xl md:rounded-3xl shadow-sm border border-slate-200/60 relative transition-all">
       <div>
         <h1 class="text-xl sm:text-2xl font-extrabold flex items-center gap-2 sm:gap-3 tracking-tight flex-wrap">
@@ -75,9 +72,9 @@
           </span>
           <span id="header-title" class="bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">光合仪</span> 
           <span class="text-slate-800">数据提取</span>
-          <span class="text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold border border-blue-100 whitespace-nowrap">并发强序版</span>
+          <span class="text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold border border-blue-100 whitespace-nowrap">多并发版</span>
         </h1>
-        <p class="text-[11px] sm:text-sm text-slate-500 mt-1.5 font-medium sm:ml-1 leading-relaxed">已解决并发乱序问题，不论解析快慢，表格数据永远严格遵守初始图片队列顺序对齐。</p>
+        <p class="text-[11px] sm:text-sm text-slate-500 mt-1.5 font-medium sm:ml-1 leading-relaxed">已重构底层的弹性高度约束引擎，左侧列队区将始终与右侧矩阵底边持平。</p>
       </div>
       <div class="flex items-center gap-3 shrink-0 w-full sm:w-auto">
         <button id="clearAllBtn" class="w-full sm:w-auto px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
@@ -135,13 +132,13 @@
       </div>
     </div>
 
-    <!-- 左右布局区 -->
-    <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 relative">
+    <!-- 🌟 核心布局重构：等高排列，赋予 min-h-0 以支持内部滚动 -->
+    <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 relative items-stretch">
       
-      <!-- 左侧：队列面板 -->
-      <div class="space-y-4 sm:space-y-5 flex flex-col w-full lg:w-[320px] xl:w-[380px] shrink-0 lg:sticky lg:top-[20px] lg:h-[calc(100vh-40px)] lg:self-start">
+      <!-- 左侧：队列面板（移除自带高度限制，完美追随右侧伸展） -->
+      <div class="space-y-4 sm:space-y-5 flex flex-col w-full lg:w-[320px] xl:w-[380px] shrink-0 min-h-0">
         
-        <div id="clickUploadZone" class="bg-gradient-to-b from-slate-50 to-white border border-dashed border-slate-300 hover:border-indigo-400 transition-all duration-300 py-5 sm:py-6 rounded-2xl sm:rounded-3xl flex flex-col items-center justify-center text-center cursor-pointer relative overflow-hidden group hover:shadow-md hover:shadow-indigo-500/5 active:scale-[0.98]">
+        <div id="clickUploadZone" class="bg-gradient-to-b from-slate-50 to-white border border-dashed border-slate-300 hover:border-indigo-400 transition-all duration-300 py-5 sm:py-6 rounded-2xl sm:rounded-3xl flex flex-col items-center justify-center text-center cursor-pointer relative overflow-hidden group hover:shadow-md hover:shadow-indigo-500/5 active:scale-[0.98] shrink-0">
           <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
           <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white text-indigo-500 rounded-xl sm:rounded-2xl flex items-center justify-center text-lg sm:text-xl mb-2 sm:mb-3 shadow-sm border border-slate-100 transition-transform duration-300 group-hover:-translate-y-1">
             <i class="fa-solid fa-cloud-arrow-up"></i>
@@ -150,7 +147,7 @@
           <p class="text-slate-400 text-[9px] sm:text-[10px] font-medium px-4">支持移动端多图批量与 4K 长截图提取</p>
         </div>
 
-        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-sm p-3 sm:p-4 flex flex-col flex-1 min-h-[180px] max-h-[35vh] lg:max-h-none lg:min-h-[300px] overflow-hidden">
+        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-sm p-3 sm:p-4 flex flex-col flex-1 min-h-[180px] overflow-hidden">
           <div class="flex items-center justify-between pb-2 sm:pb-3 border-b border-slate-100 shrink-0">
             <span class="text-[11px] sm:text-sm font-bold text-slate-800 flex items-center gap-2">
               <i class="fa-solid fa-list-check text-slate-400"></i> 解析列队
@@ -167,35 +164,39 @@
       </div>
 
       <!-- 右侧：数据表格区 -->
-      <div class="flex-1 min-w-0 flex flex-col min-h-[400px] h-[55vh] lg:h-[calc(100vh-40px)]">
-        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-sm p-3 sm:p-5 flex flex-col h-full relative overflow-hidden">
+      <div class="flex-1 min-w-0 flex flex-col">
+        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-sm p-3 sm:p-5 flex flex-col h-full relative overflow-hidden min-h-0">
           
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4 shrink-0">
             <div>
-              <h2 class="font-extrabold text-slate-800 text-sm sm:text-lg tracking-tight">可视化数据表格预览</h2>
-              <p class="text-[9px] sm:text-[11px] text-slate-500 mt-1 font-medium leading-tight">全局防误触：<span class="text-indigo-500 font-bold">单击</span>选中单元格，<span class="text-indigo-500 font-bold">双击</span>触发修改。</p>
+              <h2 class="font-extrabold text-slate-800 text-sm sm:text-lg tracking-tight">可视化数据预览</h2>
+              <p class="text-[9px] sm:text-[11px] text-slate-500 mt-1 font-medium leading-tight">表头和首尾列已支持独立冻结；单元格<span class="text-indigo-500 font-bold">单双击防误触</span>已开启。</p>
             </div>
             
-            <div class="flex items-center gap-2 w-full sm:w-auto">
-              <button id="toggleStickyBtn" onclick="toggleSticky()" class="flex-1 sm:flex-none px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[11px] sm:text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 border border-slate-200 shrink-0">
-                <i class="fa-solid fa-lock text-slate-400"></i> 解除冻结
+            <div class="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+              <button id="toggleRowStickyBtn" onclick="toggleRowSticky()" class="flex-1 sm:flex-none px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[10px] sm:text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 border border-slate-200 shrink-0">
+                <i class="fa-solid fa-lock text-slate-400"></i> 解除首行冻结
               </button>
-              <button id="exportCsvBtn" disabled class="flex-1 sm:flex-none px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[11px] sm:text-xs font-bold rounded-xl shadow-sm transition-all duration-300 flex items-center justify-center gap-2 shrink-0 border border-emerald-400/50">
+              <button id="toggleStickyBtn" onclick="toggleSticky()" class="flex-1 sm:flex-none px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[10px] sm:text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 border border-slate-200 shrink-0">
+                <i class="fa-solid fa-lock text-slate-400"></i> 解除列冻结
+              </button>
+              <button id="exportCsvBtn" disabled class="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[11px] sm:text-xs font-bold rounded-xl shadow-sm transition-all duration-300 flex items-center justify-center gap-2 shrink-0 border border-emerald-400/50">
                 <i class="fa-regular fa-file-excel"></i> 导出 Excel
               </button>
             </div>
           </div>
 
-          <div class="flex-1 overflow-auto rounded-xl border border-slate-200/60 bg-slate-50/50 relative shadow-inner" id="tableWrapper">
-            <div id="tablePlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 z-10 bg-white/50 backdrop-blur-sm transition-opacity">
-              <div class="w-10 h-10 sm:w-14 sm:h-14 bg-slate-100 rounded-xl flex items-center justify-center mb-2 sm:mb-3">
+          <!-- 表格独立滚动区（它将撑起整个容器的基准高度） -->
+          <div class="flex-1 overflow-auto rounded-xl border border-slate-200/60 bg-slate-50/50 relative shadow-inner w-full min-h-[400px] max-h-[550px] lg:min-h-[500px] lg:max-h-[75vh]" id="tableWrapper">
+            <div id="tablePlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 z-10 bg-white/50 backdrop-blur-sm transition-opacity h-48 sm:h-64 m-auto">
+              <div class="w-10 h-10 sm:w-14 sm:h-14 bg-slate-100 rounded-xl flex items-center justify-center mb-2 sm:mb-3 shadow-sm border border-slate-200/50">
                 <i class="fa-solid fa-table-list text-xl sm:text-2xl text-slate-300"></i>
               </div>
               <p class="text-[10px] sm:text-xs font-medium">数据表将在此处生成</p>
             </div>
             
             <table id="dataTable" class="w-full text-[10px] sm:text-xs text-center hidden relative select-none">
-              <thead id="tableHead" class="bg-slate-100/95 backdrop-blur-md text-slate-600 sticky top-0 z-[60] shadow-sm border-slate-200"></thead>
+              <thead id="tableHead"></thead>
               <tbody id="tableBody" class="font-mono text-slate-700 bg-white relative"></tbody>
             </table>
           </div>
@@ -214,12 +215,13 @@
            .replace(/'/g, "&#039;");
     }
 
-    const DB_NAME = 'ImageCacheDB_Ordered_Final';
+    const DB_NAME = 'ImageCacheDB_FlexStretch_V5';
     const DB_VERSION = 1;
     let db;
 
     let currentMode = localStorage.getItem('active_instrument_mode') || 'PAM';
     let isStickyEnabled = localStorage.getItem('enable_sticky_cols') !== 'false';
+    let isRowStickyEnabled = localStorage.getItem('enable_sticky_row') !== 'false';
 
     function initDB() {
       return new Promise((resolve, reject) => {
@@ -328,11 +330,23 @@
       const btn = document.getElementById('toggleStickyBtn');
       if (!btn) return;
       if (isStickyEnabled) {
-          btn.innerHTML = '<i class="fa-solid fa-unlock text-slate-400"></i> 解除冻结';
-          btn.className = "flex-1 sm:flex-none px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[11px] sm:text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 border border-slate-200 shrink-0";
+          btn.innerHTML = '<i class="fa-solid fa-unlock text-slate-400"></i> 解除列冻结';
+          btn.className = "flex-1 sm:flex-none px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[10px] sm:text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 border border-slate-200 shrink-0";
       } else {
           btn.innerHTML = '<i class="fa-solid fa-lock text-indigo-500"></i> 冻结首尾列';
-          btn.className = "flex-1 sm:flex-none px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-[11px] sm:text-xs font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 border border-indigo-200 shrink-0";
+          btn.className = "flex-1 sm:flex-none px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-[10px] sm:text-xs font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 border border-indigo-200 shrink-0";
+      }
+    }
+
+    function updateRowStickyBtnUI() {
+      const btn = document.getElementById('toggleRowStickyBtn');
+      if (!btn) return;
+      if (isRowStickyEnabled) {
+          btn.innerHTML = '<i class="fa-solid fa-unlock text-slate-400"></i> 解除首行冻结';
+          btn.className = "flex-1 sm:flex-none px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[10px] sm:text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 border border-slate-200 shrink-0";
+      } else {
+          btn.innerHTML = '<i class="fa-solid fa-lock text-indigo-500"></i> 冻结首行';
+          btn.className = "flex-1 sm:flex-none px-3 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-[10px] sm:text-xs font-bold rounded-xl shadow-sm transition-all flex items-center justify-center gap-1.5 border border-indigo-200 shrink-0";
       }
     }
 
@@ -340,6 +354,13 @@
         isStickyEnabled = !isStickyEnabled;
         localStorage.setItem('enable_sticky_cols', isStickyEnabled);
         updateStickyBtnUI();
+        renderTable(); 
+    };
+
+    window.toggleRowSticky = function() {
+        isRowStickyEnabled = !isRowStickyEnabled;
+        localStorage.setItem('enable_sticky_row', isRowStickyEnabled);
+        updateRowStickyBtnUI();
         renderTable(); 
     };
 
@@ -358,8 +379,8 @@
       loadTableData(); 
     };
 
-    function getStorageKey() { return `extracted_data_state_${currentMode}_Ordered`; }
-    function getHeadersKey() { return `user_target_headers_${currentMode}_Ordered`; }
+    function getStorageKey() { return `extracted_data_state_${currentMode}_FlexStretch`; }
+    function getHeadersKey() { return `user_target_headers_${currentMode}_FlexStretch`; }
 
     function updateConcurrencyBadge() {
       const badge = document.getElementById('concurrencyBadge');
@@ -624,7 +645,7 @@
 
                   const rawEntries = await callVisionApiEntries(base64, modeAtStart, currentKey);
                   
-                  const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeAtStart}_Zhipu_MultiThread`) || (modeAtStart === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
+                  const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeAtStart}_FlexStretch`) || (modeAtStart === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
                   const targets = savedHeadersStr.split(',').map(h => h.trim()).filter(Boolean);
                   
                   const alignedData = {};
@@ -654,7 +675,7 @@
                       updateUI();
                       saveTableData();
                   } else {
-                      const bgStorageKey = `extracted_data_state_${modeAtStart}_Zhipu_MultiThread`;
+                      const bgStorageKey = `extracted_data_state_${modeAtStart}_FlexStretch`;
                       const bgDataStr = localStorage.getItem(bgStorageKey);
                       if (bgDataStr) {
                           let bgFilesState = JSON.parse(bgDataStr);
@@ -673,7 +694,7 @@
                       updateQueueItemUI(pendingItem);
                       saveTableData();
                   } else {
-                      const bgStorageKey = `extracted_data_state_${modeAtStart}_Zhipu_MultiThread`;
+                      const bgStorageKey = `extracted_data_state_${modeAtStart}_FlexStretch`;
                       const bgDataStr = localStorage.getItem(bgStorageKey);
                       if (bgDataStr) {
                           let bgFilesState = JSON.parse(bgDataStr);
@@ -714,7 +735,7 @@
 
       if (!baseUrl.endsWith('/chat/completions')) baseUrl += '/chat/completions';
 
-      const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeForCall}_Zhipu_MultiThread`) || (modeForCall === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
+      const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeForCall}_FlexStretch`) || (modeForCall === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
       const targets = savedHeadersStr.split(',').map(h => h.trim()).filter(Boolean);
       
       let specialNote = "";
@@ -1026,7 +1047,6 @@ ${specialNote}
       }
     };
 
-    // 🌟 核心：强排渲染引擎，确保右侧表格顺序永远严格等于最初始的排队顺序！
     function renderTable() {
       const successfulItems = filesState.filter(f => f.status === 'success' && f.data);
       if (successfulItems.length === 0) {
@@ -1034,8 +1054,16 @@ ${specialNote}
       }
       tablePlaceholder.classList.add('hidden'); dataTable.classList.remove('hidden');
 
-      const stickyClassHeadLeft = isStickyEnabled ? 'sticky left-0 z-[45] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)] bg-slate-100/95 backdrop-blur-md' : 'bg-slate-100/90';
-      const stickyClassHeadRight = isStickyEnabled ? 'sticky right-0 z-[45] shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.05)] bg-slate-100/95 backdrop-blur-md' : 'bg-slate-100/90';
+      const baseHeadClass = "bg-slate-100/95 backdrop-blur-md text-slate-600 shadow-sm border-slate-200 transition-all duration-300";
+      const theadElement = document.getElementById('tableHead');
+      if (isRowStickyEnabled) {
+          theadElement.className = `${baseHeadClass} sticky top-0 z-[60]`;
+      } else {
+          theadElement.className = `${baseHeadClass} relative z-[40]`;
+      }
+
+      const stickyClassHeadLeft = isStickyEnabled ? 'sticky left-0 z-[45] shadow-[4px_0_8px_-2px_rgba(0,0,0,0.05)] bg-slate-100/95' : 'bg-slate-100/90';
+      const stickyClassHeadRight = isStickyEnabled ? 'sticky right-0 z-[45] shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.05)] bg-slate-100/95' : 'bg-slate-100/90';
 
       let headHtml = `<tr>`;
       allColumns.forEach((col, idx) => {
@@ -1105,7 +1133,6 @@ ${specialNote}
               });
           }
 
-          // 🌟 【关键修复】：无论数据生成的快慢，利用 insertBefore 强制将 DOM 节点恢复到上传时的原始顺序
           if (tableBody.children[index] !== tr) {
               tableBody.insertBefore(tr, tableBody.children[index]);
           }
@@ -1162,6 +1189,7 @@ ${specialNote}
     (async function initApp() {
       updateModeUI();
       updateStickyBtnUI();
+      updateRowStickyBtnUI();
       loadApiSettings();
       try {
         await initDB();
