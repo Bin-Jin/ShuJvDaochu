@@ -71,8 +71,8 @@
             <i class="fa-solid fa-microscope text-[14px]"></i>
           </span>
           <span id="header-title" class="bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">光合仪</span> 
-          <span class="text-slate-800">提取中心</span>
-          <span class="text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold border border-blue-100 whitespace-nowrap">全局零劫持版</span>
+          <span class="text-slate-800">数据提取</span>
+          <span class="text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold border border-blue-100 whitespace-nowrap">支持并发版</span>
         </h1>
         <p class="text-[11px] sm:text-sm text-slate-500 mt-1.5 font-medium sm:ml-1 leading-relaxed">彻底斩断左右两栏的所有自动滚动逻辑，无论导入多少文件，滑动控制权完全归你。</p>
       </div>
@@ -171,13 +171,13 @@
           
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4 shrink-0">
             <div>
-              <h2 class="font-extrabold text-slate-800 text-sm sm:text-lg tracking-tight">结构化数据矩阵</h2>
+              <h2 class="font-extrabold text-slate-800 text-sm sm:text-lg tracking-tight">可视化数据预览</h2>
               <p class="text-[9px] sm:text-[11px] text-slate-500 mt-1 font-medium leading-tight">表头和首尾列已支持独立冻结；单元格<span class="text-indigo-500 font-bold">单双击防误触</span>已开启。</p>
             </div>
             
             <div class="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
               <button id="toggleRowStickyBtn" onclick="toggleRowSticky()" class="flex-1 sm:flex-none px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[10px] sm:text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 border border-slate-200 shrink-0">
-                <i class="fa-solid fa-lock text-slate-400"></i> 解除首行
+                <i class="fa-solid fa-lock text-slate-400"></i> 解除首行冻结
               </button>
               <button id="toggleStickyBtn" onclick="toggleSticky()" class="flex-1 sm:flex-none px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[10px] sm:text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 border border-slate-200 shrink-0">
                 <i class="fa-solid fa-lock text-slate-400"></i> 解除列冻结
@@ -347,7 +347,7 @@
       const btn = document.getElementById('toggleRowStickyBtn');
       if (!btn) return;
       if (isRowStickyEnabled) {
-          btn.innerHTML = '<i class="fa-solid fa-unlock text-slate-400"></i> 解除首行';
+          btn.innerHTML = '<i class="fa-solid fa-unlock text-slate-400"></i> 解除首行冻结';
           btn.className = "flex-1 sm:flex-none px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[10px] sm:text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 border border-slate-200 shrink-0";
       } else {
           btn.innerHTML = '<i class="fa-solid fa-lock text-indigo-500"></i> 冻结首行';
