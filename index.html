@@ -83,7 +83,7 @@
       </div>
     </div>
 
-    <!-- 极简版 API 配置区 -->
+    <!-- API 配置区 -->
     <div class="bg-white p-4 sm:p-5 md:p-6 rounded-2xl md:rounded-3xl shadow-sm border border-slate-200/60 space-y-4 sm:space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
         <h2 class="text-sm sm:text-base font-bold text-slate-800 flex items-center gap-2">
@@ -112,8 +112,15 @@
           <input type="text" id="apiModel" class="w-full text-xs sm:text-sm bg-slate-50 px-3 py-2 border border-slate-200 rounded-xl outline-none transition-all font-bold text-slate-700 font-mono" readonly value="glm-4v-flash">
         </div>
         <div class="sm:col-span-2">
-          <!-- 🌟 提示用户可以填多个Key -->
-          <label class="block text-[10px] font-semibold text-slate-500 mb-1.5 uppercase tracking-wider text-indigo-600">并发轮询池 API Key <span class="font-normal text-slate-400">(用英文逗号 , 隔开多个Key)</span></label>
+          <!-- 🌟 并发数量实时展示栏 -->
+          <div class="flex items-center justify-between mb-1.5 flex-wrap gap-1">
+            <label class="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider">
+              API 密钥轮询池 <span class="font-normal text-slate-400">(多个Key用逗号 , 隔开)</span>
+            </label>
+            <span id="concurrencyBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1.5 bg-slate-100 text-slate-500 transition-all border border-slate-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 未配置
+            </span>
+          </div>
           <input type="text" id="apiKey" placeholder="例如: key1, key2, key3..." class="w-full text-xs sm:text-sm bg-indigo-50/30 px-3 py-2 border border-indigo-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 transition-all text-slate-800 font-mono shadow-inner font-bold">
         </div>
       </div>
@@ -129,7 +136,7 @@
     <!-- 左右布局区 -->
     <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 relative">
       
-      <!-- 左侧：队列与图片预览面板 -->
+      <!-- 左侧：队列面板 -->
       <div class="space-y-4 sm:space-y-5 flex flex-col w-full lg:w-[320px] xl:w-[380px] shrink-0 lg:sticky lg:top-[20px] lg:h-[calc(100vh-40px)] lg:self-start">
         
         <div id="clickUploadZone" class="bg-gradient-to-b from-slate-50 to-white border border-dashed border-slate-300 hover:border-indigo-400 transition-all duration-300 py-5 sm:py-6 rounded-2xl sm:rounded-3xl flex flex-col items-center justify-center text-center cursor-pointer relative overflow-hidden group hover:shadow-md hover:shadow-indigo-500/5 active:scale-[0.98]">
@@ -138,7 +145,7 @@
             <i class="fa-solid fa-cloud-arrow-up"></i>
           </div>
           <h3 class="font-bold text-slate-700 text-xs sm:text-sm mb-1">导入图表文件</h3>
-          <p class="text-slate-400 text-[9px] sm:text-[11px] font-medium px-4">支持移动端多图批量与 4K 长截图提取</p>
+          <p class="text-slate-400 text-[9px] sm:text-[10px] font-medium px-4">支持移动端多图批量与 4K 长截图提取</p>
         </div>
 
         <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-sm p-3 sm:p-4 flex flex-col flex-1 min-h-[180px] max-h-[35vh] lg:max-h-none lg:min-h-[300px] overflow-hidden">
@@ -159,11 +166,11 @@
 
       <!-- 右侧：数据表格区 -->
       <div class="flex-1 min-w-0 flex flex-col min-h-[400px] h-[55vh] lg:h-[calc(100vh-40px)]">
-        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-sm p-3 sm:p-6 flex flex-col h-full relative overflow-hidden">
+        <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-sm p-3 sm:p-5 flex flex-col h-full relative overflow-hidden">
           
-          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-5 shrink-0">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4 shrink-0">
             <div>
-              <h2 class="font-extrabold text-slate-800 text-sm sm:text-xl tracking-tight">可视化数据表格</h2>
+              <h2 class="font-extrabold text-slate-800 text-sm sm:text-lg tracking-tight">可视化数据表格</h2>
               <p class="text-[9px] sm:text-[11px] text-slate-500 mt-1 font-medium leading-tight">全局防误触：<span class="text-indigo-500 font-bold">单击</span>选中单元格，<span class="text-indigo-500 font-bold">双击</span>触发修改。</p>
             </div>
             
@@ -179,7 +186,7 @@
 
           <div class="flex-1 overflow-auto rounded-xl border border-slate-200/60 bg-slate-50/50 relative shadow-inner" id="tableWrapper">
             <div id="tablePlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 z-10 bg-white/50 backdrop-blur-sm transition-opacity">
-              <div class="w-10 h-10 sm:w-14 sm:h-14 bg-slate-100 rounded-xl flex items-center justify-center mb-2 sm:mb-4">
+              <div class="w-10 h-10 sm:w-14 sm:h-14 bg-slate-100 rounded-xl flex items-center justify-center mb-2 sm:mb-3">
                 <i class="fa-solid fa-table-list text-xl sm:text-2xl text-slate-300"></i>
               </div>
               <p class="text-[10px] sm:text-xs font-medium">数据表将在此处生成</p>
@@ -205,7 +212,7 @@
            .replace(/'/g, "&#039;");
     }
 
-    const DB_NAME = 'ImageCacheDB_Zhipu_MultiThread';
+    const DB_NAME = 'ImageCacheDB_Zhipu_MultiThread_V2';
     const DB_VERSION = 1;
     let db;
 
@@ -361,6 +368,26 @@
     function getStorageKey() { return `extracted_data_state_${currentMode}_Zhipu_MultiThread`; }
     function getHeadersKey() { return `user_target_headers_${currentMode}_Zhipu_MultiThread`; }
 
+    // 🌟 实时计算并更新当前并发状态徽章
+    function updateConcurrencyBadge() {
+      const badge = document.getElementById('concurrencyBadge');
+      if (!badge) return;
+      const rawKeys = document.getElementById('apiKey').value;
+      const keys = rawKeys.split(',').map(k => k.trim().replace(/[\u4e00-\u9fa5\s]/g, '')).filter(Boolean);
+      const count = keys.length;
+
+      if (count === 0) {
+        badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1.5 bg-slate-100 text-slate-500 transition-all border border-slate-200";
+        badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> 未配置`;
+      } else if (count === 1) {
+        badge.className = "text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1.5 bg-indigo-50 text-indigo-600 transition-all border border-indigo-200";
+        badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></span> 单线程 (1)`;
+      } else {
+        badge.className = "text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1.5 bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-sm shadow-indigo-500/20 transition-all border border-indigo-400";
+        badge.innerHTML = `<i class="fa-solid fa-bolt text-[9px] animate-bounce"></i> ${count} 线程并发 (${count})`;
+      }
+    }
+
     function loadApiSettings() {
       document.getElementById('apiBaseUrl').value = localStorage.getItem('api_base_url') || 'https://open.bigmodel.cn/api/paas/v4';
       document.getElementById('apiModel').value = localStorage.getItem('api_model') || 'glm-4v-flash';
@@ -370,6 +397,7 @@
       const savedHeaders = localStorage.getItem(getHeadersKey());
       targetHeadersInput.value = savedHeaders || defaultHeaders;
       
+      updateConcurrencyBadge();
       updateColumnsFromInput();
     }
 
@@ -378,6 +406,7 @@
       localStorage.setItem('api_model', document.getElementById('apiModel').value.trim());
       localStorage.setItem('api_key', document.getElementById('apiKey').value.trim());
       localStorage.setItem(getHeadersKey(), targetHeadersInput.value.trim());
+      updateConcurrencyBadge();
       updateColumnsFromInput();
     }
 
@@ -538,11 +567,6 @@
 
     const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 
-    function getTargetHeaders() {
-      const raw = targetHeadersInput.value.split(',');
-      return raw.map(h => h.trim()).filter(Boolean);
-    }
-
     function mapKeyToTarget(rawKey, targets) {
       let key = (rawKey || '').trim();
       let lower = key.toLowerCase().replace(/[_]+/g, ' ').replace(/\s+/g, ' ');
@@ -572,7 +596,6 @@
       if (isProcessing) return;
       isProcessing = true;
 
-      // 解析逗号分隔的多个 API Key
       const rawKeys = document.getElementById('apiKey').value;
       const keys = rawKeys.split(',').map(k => k.trim().replace(/[\u4e00-\u9fa5\s]/g, '')).filter(Boolean);
       
@@ -581,7 +604,6 @@
           return;
       }
 
-      // 并发数根据填入的 Key 数量动态调整
       const maxConcurrent = keys.length;
 
       async function worker() {
@@ -589,12 +611,10 @@
               const pendingItem = filesState.find(f => f.status === 'pending');
               if (!pendingItem) break;
               
-              // 独占状态锁定
               pendingItem.status = 'processing';
-              const modeAtStart = currentMode; // 记录开始处理时的所属仪器工作区
+              const modeAtStart = currentMode;
               updateQueueItemUI(pendingItem);
               
-              // 从池子中轮询取用分配 Key
               const currentKey = keys[keyIndex % keys.length];
               keyIndex++;
               
@@ -611,10 +631,8 @@
                      throw new Error('原图缓存已丢失，请重新拖入图片。');
                   }
 
-                  // 传入分配的 Key 与当前仪器的提示词模式
                   const rawEntries = await callVisionApiEntries(base64, modeAtStart, currentKey);
                   
-                  // 从后台存储读取当时的指标列表
                   const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeAtStart}_Zhipu_MultiThread`) || (modeAtStart === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
                   const targets = savedHeadersStr.split(',').map(h => h.trim()).filter(Boolean);
                   
@@ -630,7 +648,6 @@
                     }
                   });
 
-                  // 🌟 影子更新机制：防切换污染
                   if (currentMode === modeAtStart) {
                       pendingItem.status = 'success';
                       pendingItem.data = alignedData;
@@ -646,7 +663,6 @@
                       updateUI();
                       saveTableData();
                   } else {
-                      // 用户已切走，静默后台落库
                       const bgStorageKey = `extracted_data_state_${modeAtStart}_Zhipu_MultiThread`;
                       const bgDataStr = localStorage.getItem(bgStorageKey);
                       if (bgDataStr) {
@@ -687,15 +703,14 @@
                   }, 50);
               }
               
-              await sleep(300); // 轻微错峰防限流
+              await sleep(300);
           }
       }
 
-      // 启动所有并发线程
       const workers = [];
       for (let i = 0; i < maxConcurrent; i++) {
           workers.push(worker());
-          await sleep(200); // 错峰启动
+          await sleep(200);
       }
       
       await Promise.all(workers);
@@ -981,7 +996,7 @@ ${specialNote}
       } else if (item.status === 'error') {
         statusBox.innerHTML = `<button onclick="retryItem('${item.id}')" class="text-indigo-600 hover:text-white hover:bg-indigo-500 border border-indigo-200 px-1.5 py-0.5 sm:py-1 rounded transition-all shadow-sm text-[9px] sm:text-[10px]">重试</button>
                                <div class="relative group/tooltip">
-                                 <span class="text-[9px] sm:text-xs text-rose-600 flex items-center gap-1 cursor-help bg-rose-50 px-1.5 py-0.5 sm:py-1 rounded-md"><i class="fa-solid fa-triangle-exclamation"></i> 失败</span>
+                                 <span class="text-[9px] sm:text-xs text-rose-600 flex items-center gap-1 cursor-help bg-rose-50 px-1.5 py-1 rounded-md"><i class="fa-solid fa-triangle-exclamation"></i> 失败</span>
                                  <div class="absolute right-0 bottom-full mb-2 hidden group-hover/tooltip:block w-48 sm:w-56 p-2 sm:p-2.5 bg-slate-800 text-white text-[10px] sm:text-[11px] leading-relaxed rounded-lg shadow-xl z-50 break-words font-normal">${escapeHtml(item.errorMsg)}</div>
                                </div>
                                ${deleteBtn}`;
@@ -1079,7 +1094,7 @@ ${specialNote}
                     colHtml += `<td class="relative ${tdLeftClass} px-1 sm:px-2 py-1 font-sans border-b border-slate-100 border-r border-slate-200/80 whitespace-nowrap transition-all duration-300"><input type="text" data-index="${index}" data-col="样本名称" value="${escapeHtml(item.customName)}" title="${escapeHtml(item.customName)}" class="cell-input bg-transparent px-1 sm:px-2 py-1.5 sm:py-2 border border-transparent rounded-md sm:rounded-lg outline-none transition-all w-full text-center text-[11px] sm:text-xs min-w-[75px] font-bold text-slate-800" readonly onclick="handleCellInteract(this, event)" onblur="handleCellBlur(this, '${item.id}', '样本名称')" onkeydown="handleCellKey(event, this)"></td>`;
                 } else {
                     const val = item.data[col] !== undefined ? item.data[col] : '';
-                    colHtml += `<td class="${cellBg} px-1 sm:px-2 py-1 border-b border-slate-100 border-r border-slate-100/50 whitespace-nowrap transition-colors text-center"><input type="text" data-index="${index}" value="${escapeHtml(val)}" class="cell-input bg-transparent px-1 sm:px-2 py-1.5 sm:py-2 border border-transparent rounded-md sm:rounded-lg outline-none transition-all w-full placeholder:text-slate-200 text-center text-[11px] sm:text-xs min-w-[60px] text-slate-600" placeholder="-" readonly onclick="handleCellInteract(this, event)" onblur="handleCellBlur(this, '${item.id}', '${escapeHtml(col).replace(/'/g, "\\'")}')" onkeydown="handleCellKey(event, this)"></td>`;
+                    colHtml += `<td class="px-1 sm:px-2 py-1 border-b border-slate-100 border-r border-slate-100/50 whitespace-nowrap ${cellBg} transition-colors text-center"><input type="text" data-index="${index}" value="${escapeHtml(val)}" class="cell-input bg-transparent px-1 sm:px-2 py-1.5 sm:py-2 border border-transparent rounded-md sm:rounded-lg outline-none transition-all w-full placeholder:text-slate-200 text-center text-[11px] sm:text-xs min-w-[60px] text-slate-600" placeholder="-" readonly onclick="handleCellInteract(this, event)" onblur="handleCellBlur(this, '${item.id}', '${escapeHtml(col).replace(/'/g, "\\'")}')" onkeydown="handleCellKey(event, this)"></td>`;
                 }
               });
               const tdRightClass = isStickyEnabled ? `sticky right-0 z-[35] shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.02)] ${stickyBgLeft} backdrop-blur-sm` : '';
