@@ -72,9 +72,9 @@
           </span>
           <span id="header-title" class="bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">光合仪</span> 
           <span class="text-slate-800">数据提取</span>
-          <span class="text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold border border-blue-100 whitespace-nowrap">高并发版</span>
+          <span class="text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold border border-blue-100 whitespace-nowrap">全端绝对等高版</span>
         </h1>
-        <p class="text-[11px] sm:text-sm text-slate-500 mt-1.5 font-medium sm:ml-1 leading-relaxed">底盘结构已全局锁定，左右两栏完美持平等高。数据增减只触发内滚，视窗永不变形。</p>
+        <p class="text-[11px] sm:text-sm text-slate-500 mt-1.5 font-medium sm:ml-1 leading-relaxed">已同步移动端布局锁定引擎。手机上下排版严格等高，界面永不坍塌。</p>
       </div>
       <div class="flex items-center gap-3 shrink-0 w-full sm:w-auto">
         <button id="clearAllBtn" class="w-full sm:w-auto px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
@@ -132,11 +132,11 @@
       </div>
     </div>
 
-    <!-- 🌟 核心布局：绝对锁定高度，保障左右两栏完美等高 -->
+    <!-- 🌟 核心布局：电脑端左右绝对等高（h-[70vh]），手机端上下绝对等高（h-[480px]） -->
     <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 relative lg:h-[70vh] lg:min-h-[600px] lg:max-h-[850px]">
       
-      <!-- 左侧：队列面板。手机端给予独立高度，PC端填充父级高度 -->
-      <div class="flex flex-col w-full lg:w-[320px] xl:w-[380px] shrink-0 h-[450px] lg:h-full space-y-4 sm:space-y-5">
+      <!-- 左侧：队列面板 -->
+      <div class="flex flex-col w-full lg:w-[320px] xl:w-[380px] shrink-0 h-[480px] sm:h-[550px] lg:h-full space-y-4 sm:space-y-5">
         
         <div id="clickUploadZone" class="bg-gradient-to-b from-slate-50 to-white border border-dashed border-slate-300 hover:border-indigo-400 transition-all duration-300 py-5 sm:py-6 rounded-2xl sm:rounded-3xl flex flex-col items-center justify-center text-center cursor-pointer relative overflow-hidden group hover:shadow-md hover:shadow-indigo-500/5 active:scale-[0.98] shrink-0">
           <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
@@ -147,7 +147,6 @@
           <p class="text-slate-400 text-[9px] sm:text-[10px] font-medium px-4">支持移动端多图批量与 4K 长截图提取</p>
         </div>
 
-        <!-- 🌟 左侧队列将完美继承剩余高度，数据增多只产生内滚 -->
         <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-sm p-3 sm:p-4 flex flex-col flex-1 overflow-hidden">
           <div class="flex items-center justify-between pb-2 sm:pb-3 border-b border-slate-100 shrink-0">
             <span class="text-[11px] sm:text-sm font-bold text-slate-800 flex items-center gap-2">
@@ -164,8 +163,8 @@
         </div>
       </div>
 
-      <!-- 右侧：数据表格区。与左侧完全保持持平 -->
-      <div class="flex-1 min-w-0 flex flex-col h-[500px] lg:h-full">
+      <!-- 右侧：数据表格区 -->
+      <div class="flex-1 min-w-0 flex flex-col h-[480px] sm:h-[550px] lg:h-full">
         <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-sm p-3 sm:p-5 flex flex-col flex-1 relative overflow-hidden">
           
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4 shrink-0">
@@ -187,7 +186,6 @@
             </div>
           </div>
 
-          <!-- 🌟 表格也将完美占满右侧面板剩余的固定高度 -->
           <div class="flex-1 overflow-auto rounded-xl border border-slate-200/60 bg-slate-50/50 relative shadow-inner w-full" id="tableWrapper">
             <div id="tablePlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 z-10 bg-white/50 backdrop-blur-sm transition-opacity">
               <div class="w-10 h-10 sm:w-14 sm:h-14 bg-slate-100 rounded-xl flex items-center justify-center mb-2 sm:mb-3 shadow-sm border border-slate-200/50">
@@ -216,7 +214,7 @@
            .replace(/'/g, "&#039;");
     }
 
-    const DB_NAME = 'ImageCacheDB_EqualHeight';
+    const DB_NAME = 'ImageCacheDB_MobileSync_V7';
     const DB_VERSION = 1;
     let db;
 
@@ -380,8 +378,8 @@
       loadTableData(); 
     };
 
-    function getStorageKey() { return `extracted_data_state_${currentMode}_Equal`; }
-    function getHeadersKey() { return `user_target_headers_${currentMode}_Equal`; }
+    function getStorageKey() { return `extracted_data_state_${currentMode}_MobileSync`; }
+    function getHeadersKey() { return `user_target_headers_${currentMode}_MobileSync`; }
 
     function updateConcurrencyBadge() {
       const badge = document.getElementById('concurrencyBadge');
@@ -646,7 +644,7 @@
 
                   const rawEntries = await callVisionApiEntries(base64, modeAtStart, currentKey);
                   
-                  const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeAtStart}_Equal`) || (modeAtStart === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
+                  const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeAtStart}_MobileSync`) || (modeAtStart === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
                   const targets = savedHeadersStr.split(',').map(h => h.trim()).filter(Boolean);
                   
                   const alignedData = {};
@@ -676,7 +674,7 @@
                       updateUI();
                       saveTableData();
                   } else {
-                      const bgStorageKey = `extracted_data_state_${modeAtStart}_Equal`;
+                      const bgStorageKey = `extracted_data_state_${modeAtStart}_MobileSync`;
                       const bgDataStr = localStorage.getItem(bgStorageKey);
                       if (bgDataStr) {
                           let bgFilesState = JSON.parse(bgDataStr);
@@ -695,7 +693,7 @@
                       updateQueueItemUI(pendingItem);
                       saveTableData();
                   } else {
-                      const bgStorageKey = `extracted_data_state_${modeAtStart}_Equal`;
+                      const bgStorageKey = `extracted_data_state_${modeAtStart}_MobileSync`;
                       const bgDataStr = localStorage.getItem(bgStorageKey);
                       if (bgDataStr) {
                           let bgFilesState = JSON.parse(bgDataStr);
@@ -736,7 +734,7 @@
 
       if (!baseUrl.endsWith('/chat/completions')) baseUrl += '/chat/completions';
 
-      const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeForCall}_Equal`) || (modeForCall === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
+      const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeForCall}_MobileSync`) || (modeForCall === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
       const targets = savedHeadersStr.split(',').map(h => h.trim()).filter(Boolean);
       
       let specialNote = "";
