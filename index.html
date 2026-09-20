@@ -72,9 +72,9 @@
           </span>
           <span id="header-title" class="bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">光合仪</span> 
           <span class="text-slate-800">提取中心</span>
-          <span class="text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold border border-blue-100 whitespace-nowrap">彻底防跳动版</span>
+          <span class="text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold border border-blue-100 whitespace-nowrap">全局零劫持版</span>
         </h1>
-        <p class="text-[11px] sm:text-sm text-slate-500 mt-1.5 font-medium sm:ml-1 leading-relaxed">彻底移除了强制底部滚动代码，解析过程中你可以自由上下滑动任何模块，互不干扰。</p>
+        <p class="text-[11px] sm:text-sm text-slate-500 mt-1.5 font-medium sm:ml-1 leading-relaxed">彻底斩断左右两栏的所有自动滚动逻辑，无论导入多少文件，滑动控制权完全归你。</p>
       </div>
       <div class="flex items-center gap-3 shrink-0 w-full sm:w-auto">
         <button id="clearAllBtn" class="w-full sm:w-auto px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
@@ -132,7 +132,7 @@
       </div>
     </div>
 
-    <!-- 全局高度约束引擎 -->
+    <!-- 左右布局区 -->
     <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 relative lg:h-[70vh] lg:min-h-[600px] lg:max-h-[850px]">
       
       <!-- 左侧：队列面板 -->
@@ -220,7 +220,7 @@
            .replace(/'/g, "&#039;");
     }
 
-    const DB_NAME = 'ImageCacheDB_NoJump_V10';
+    const DB_NAME = 'ImageCacheDB_NoJump_V11';
     const DB_VERSION = 1;
     let db;
 
@@ -384,8 +384,8 @@
       loadTableData(); 
     };
 
-    function getStorageKey() { return `extracted_data_state_${currentMode}_NoJump_V10`; }
-    function getHeadersKey() { return `user_target_headers_${currentMode}_NoJump_V10`; }
+    function getStorageKey() { return `extracted_data_state_${currentMode}_NoJump_V11`; }
+    function getHeadersKey() { return `user_target_headers_${currentMode}_NoJump_V11`; }
 
     function updateConcurrencyBadge() {
       const badge = document.getElementById('concurrencyBadge');
@@ -573,8 +573,7 @@
         filesState.push(item);
         renderQueueItemDOM(item);
 
-        // 🌟 上传时将队列视窗轻微滚动到底部让用户知道添加成功了
-        setTimeout(() => fileList.scrollTop = fileList.scrollHeight, 50);
+        // 🌟 彻底移除：不再执行 setTimeout 强迫滚动条拉到底部！
 
         compressImageToBase64(file).then(base64 => {
             saveImageToCache(fileId, base64);
@@ -652,7 +651,7 @@
 
                   const rawEntries = await callVisionApiEntries(base64, modeAtStart, currentKey);
                   
-                  const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeAtStart}_NoJump_V10`) || (modeAtStart === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
+                  const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeAtStart}_NoJump_V11`) || (modeAtStart === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
                   const targets = savedHeadersStr.split(',').map(h => h.trim()).filter(Boolean);
                   
                   const alignedData = {};
@@ -682,7 +681,7 @@
                       updateUI();
                       saveTableData();
                   } else {
-                      const bgStorageKey = `extracted_data_state_${modeAtStart}_NoJump_V10`;
+                      const bgStorageKey = `extracted_data_state_${modeAtStart}_NoJump_V11`;
                       const bgDataStr = localStorage.getItem(bgStorageKey);
                       if (bgDataStr) {
                           let bgFilesState = JSON.parse(bgDataStr);
@@ -701,7 +700,7 @@
                       updateQueueItemUI(pendingItem);
                       saveTableData();
                   } else {
-                      const bgStorageKey = `extracted_data_state_${modeAtStart}_NoJump_V10`;
+                      const bgStorageKey = `extracted_data_state_${modeAtStart}_NoJump_V11`;
                       const bgDataStr = localStorage.getItem(bgStorageKey);
                       if (bgDataStr) {
                           let bgFilesState = JSON.parse(bgDataStr);
@@ -714,9 +713,6 @@
                       }
                   }
               }
-              
-              // 🌟 彻底移除了此处会强行拉扯滚动条（scrollTop = scrollHeight）的魔鬼代码！
-              // 你的滑动操作再也不会被打断了。
               
               await sleep(300);
           }
@@ -738,7 +734,7 @@
 
       if (!baseUrl.endsWith('/chat/completions')) baseUrl += '/chat/completions';
 
-      const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeForCall}_NoJump_V10`) || (modeForCall === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
+      const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeForCall}_NoJump_V11`) || (modeForCall === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
       const targets = savedHeadersStr.split(',').map(h => h.trim()).filter(Boolean);
       
       let specialNote = "";
