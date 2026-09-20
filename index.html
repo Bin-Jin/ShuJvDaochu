@@ -72,9 +72,9 @@
           </span>
           <span id="header-title" class="bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">光合仪</span> 
           <span class="text-slate-800">提取中心</span>
-          <span class="text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold border border-blue-100 whitespace-nowrap">视窗强锁版</span>
+          <span class="text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold border border-blue-100 whitespace-nowrap">防坍塌双保险版</span>
         </h1>
-        <p class="text-[11px] sm:text-sm text-slate-500 mt-1.5 font-medium sm:ml-1 leading-relaxed">彻底修复移动端由于内容撑开导致的高度坍塌和无限延伸问题，框体大小绝对稳定。</p>
+        <p class="text-[11px] sm:text-sm text-slate-500 mt-1.5 font-medium sm:ml-1 leading-relaxed">彻底修复手机端 Flexbox 高度为 0 的坍塌 Bug，强制双模块完美等高锁死。</p>
       </div>
       <div class="flex items-center gap-3 shrink-0 w-full sm:w-auto">
         <button id="clearAllBtn" class="w-full sm:w-auto px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
@@ -132,11 +132,11 @@
       </div>
     </div>
 
-    <!-- 🌟 核心：外层骨架锁定高度 (PC端70vh, 手机端靠内部模块设定高度栈) -->
+    <!-- 🌟 核心布局：全局容器约束 -->
     <div class="flex flex-col lg:flex-row gap-4 sm:gap-6 relative lg:h-[70vh] lg:min-h-[600px] lg:max-h-[850px]">
       
-      <!-- 左侧：队列面板 (手机端强制500px高) -->
-      <div class="flex flex-col w-full lg:w-[320px] xl:w-[380px] shrink-0 h-[500px] sm:h-[600px] lg:h-full space-y-4 sm:space-y-5">
+      <!-- 左侧：队列面板。双重保底 min-h-[500px] h-[500px] -->
+      <div class="w-full lg:w-[320px] xl:w-[380px] shrink-0 flex flex-col h-[500px] min-h-[500px] sm:h-[600px] sm:min-h-[600px] lg:h-full lg:min-h-0 space-y-4 sm:space-y-5">
         
         <div id="clickUploadZone" class="bg-gradient-to-b from-slate-50 to-white border border-dashed border-slate-300 hover:border-indigo-400 transition-all duration-300 py-5 sm:py-6 rounded-2xl sm:rounded-3xl flex flex-col items-center justify-center text-center cursor-pointer relative overflow-hidden group hover:shadow-md hover:shadow-indigo-500/5 active:scale-[0.98] shrink-0">
           <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
@@ -154,7 +154,6 @@
             </span>
             <span id="fileCountBadge" class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md tracking-wider">0 项</span>
           </div>
-          <!-- 🌟 绝对包裹容器：斩断内容高度对父级的影响 -->
           <div class="flex-1 relative min-h-0 w-full mt-2">
             <div id="fileList" class="absolute inset-0 divide-y divide-slate-50 overflow-y-auto pb-2 pr-1 space-y-1">
               <div id="emptyListTip" class="h-full flex flex-col items-center justify-center text-slate-300 gap-2 sm:gap-3 opacity-60 py-4">
@@ -166,19 +165,19 @@
         </div>
       </div>
 
-      <!-- 右侧：数据表格区 (手机端也强制500px高，保证左右两块绝对等高且对称) -->
-      <div class="flex-1 min-w-0 flex flex-col h-[500px] sm:h-[600px] lg:h-full">
+      <!-- 右侧：数据表格区。🌟 剥离移动端 flex-1，强制采用 min-h-[500px] h-[500px] 防止坍塌 -->
+      <div class="w-full lg:flex-1 min-w-0 flex flex-col h-[500px] min-h-[500px] sm:h-[600px] sm:min-h-[600px] lg:h-full lg:min-h-0">
         <div class="bg-white rounded-2xl sm:rounded-3xl border border-slate-200/60 shadow-sm p-3 sm:p-5 flex flex-col flex-1 relative overflow-hidden min-h-0">
           
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4 shrink-0">
             <div>
-              <h2 class="font-extrabold text-slate-800 text-sm sm:text-lg tracking-tight">可视化数据预览</h2>
+              <h2 class="font-extrabold text-slate-800 text-sm sm:text-lg tracking-tight">结构化数据矩阵</h2>
               <p class="text-[9px] sm:text-[11px] text-slate-500 mt-1 font-medium leading-tight">表头和首尾列已支持独立冻结；单元格<span class="text-indigo-500 font-bold">单双击防误触</span>已开启。</p>
             </div>
             
             <div class="flex items-center gap-1.5 sm:gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
               <button id="toggleRowStickyBtn" onclick="toggleRowSticky()" class="flex-1 sm:flex-none px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[10px] sm:text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 border border-slate-200 shrink-0">
-                <i class="fa-solid fa-lock text-slate-400"></i> 解除首行冻结
+                <i class="fa-solid fa-lock text-slate-400"></i> 解除首行
               </button>
               <button id="toggleStickyBtn" onclick="toggleSticky()" class="flex-1 sm:flex-none px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[10px] sm:text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 border border-slate-200 shrink-0">
                 <i class="fa-solid fa-lock text-slate-400"></i> 解除列冻结
@@ -189,11 +188,10 @@
             </div>
           </div>
 
-          <!-- 🌟 核心：flex-1包裹 absolute inset-0 锁定内部高度，永不被数据撑爆 -->
+          <!-- 🌟 绝对包裹容器：斩断内容高度对父级的影响，强迫其使用可用空间内部滚动 -->
           <div class="flex-1 relative min-h-0 w-full mt-1">
             <div class="absolute inset-0 overflow-auto rounded-xl border border-slate-200/60 bg-slate-50/50 shadow-inner" id="tableWrapper">
               
-              <!-- 占位符现在直接铺满内部，完美居中 -->
               <div id="tablePlaceholder" class="absolute inset-0 flex flex-col items-center justify-center text-slate-400 z-10 bg-white/50 backdrop-blur-sm transition-opacity">
                 <div class="w-10 h-10 sm:w-14 sm:h-14 bg-slate-100 rounded-xl flex items-center justify-center mb-2 sm:mb-3 shadow-sm border border-slate-200/50">
                   <i class="fa-solid fa-table-list text-xl sm:text-2xl text-slate-300"></i>
@@ -223,7 +221,7 @@
            .replace(/'/g, "&#039;");
     }
 
-    const DB_NAME = 'ImageCacheDB_ViewportLock_V8';
+    const DB_NAME = 'ImageCacheDB_AntiCollapse_V9';
     const DB_VERSION = 1;
     let db;
 
@@ -350,7 +348,7 @@
       const btn = document.getElementById('toggleRowStickyBtn');
       if (!btn) return;
       if (isRowStickyEnabled) {
-          btn.innerHTML = '<i class="fa-solid fa-unlock text-slate-400"></i> 解除首行冻结';
+          btn.innerHTML = '<i class="fa-solid fa-unlock text-slate-400"></i> 解除首行';
           btn.className = "flex-1 sm:flex-none px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 text-[10px] sm:text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 border border-slate-200 shrink-0";
       } else {
           btn.innerHTML = '<i class="fa-solid fa-lock text-indigo-500"></i> 冻结首行';
@@ -387,8 +385,8 @@
       loadTableData(); 
     };
 
-    function getStorageKey() { return `extracted_data_state_${currentMode}_ViewportLock`; }
-    function getHeadersKey() { return `user_target_headers_${currentMode}_ViewportLock`; }
+    function getStorageKey() { return `extracted_data_state_${currentMode}_AntiCollapse`; }
+    function getHeadersKey() { return `user_target_headers_${currentMode}_AntiCollapse`; }
 
     function updateConcurrencyBadge() {
       const badge = document.getElementById('concurrencyBadge');
@@ -653,7 +651,7 @@
 
                   const rawEntries = await callVisionApiEntries(base64, modeAtStart, currentKey);
                   
-                  const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeAtStart}_ViewportLock`) || (modeAtStart === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
+                  const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeAtStart}_AntiCollapse`) || (modeAtStart === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
                   const targets = savedHeadersStr.split(',').map(h => h.trim()).filter(Boolean);
                   
                   const alignedData = {};
@@ -683,7 +681,7 @@
                       updateUI();
                       saveTableData();
                   } else {
-                      const bgStorageKey = `extracted_data_state_${modeAtStart}_ViewportLock`;
+                      const bgStorageKey = `extracted_data_state_${modeAtStart}_AntiCollapse`;
                       const bgDataStr = localStorage.getItem(bgStorageKey);
                       if (bgDataStr) {
                           let bgFilesState = JSON.parse(bgDataStr);
@@ -702,7 +700,7 @@
                       updateQueueItemUI(pendingItem);
                       saveTableData();
                   } else {
-                      const bgStorageKey = `extracted_data_state_${modeAtStart}_ViewportLock`;
+                      const bgStorageKey = `extracted_data_state_${modeAtStart}_AntiCollapse`;
                       const bgDataStr = localStorage.getItem(bgStorageKey);
                       if (bgDataStr) {
                           let bgFilesState = JSON.parse(bgDataStr);
@@ -743,7 +741,7 @@
 
       if (!baseUrl.endsWith('/chat/completions')) baseUrl += '/chat/completions';
 
-      const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeForCall}_ViewportLock`) || (modeForCall === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
+      const savedHeadersStr = localStorage.getItem(`user_target_headers_${modeForCall}_AntiCollapse`) || (modeForCall === 'PAM' ? PAM_HEADERS : NBI_HEADERS);
       const targets = savedHeadersStr.split(',').map(h => h.trim()).filter(Boolean);
       
       let specialNote = "";
