@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>仪器数据提取工作站 - 智谱多核并发版</title>
+  <title>仪器数据提取工作站 - 智谱专版</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -22,6 +22,7 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    /* 🌟 全局双向高光联动追踪样式 */
     .pair-hover {
       background-color: #eef2ff !important;
       box-shadow: inset 0 0 0 1px #818cf8 !important;
@@ -32,6 +33,7 @@
     tr.pair-hover td:first-child { border-top-left-radius: 0.5rem; border-bottom-left-radius: 0.5rem; }
     tr.pair-hover td:last-child { border-top-right-radius: 0.5rem; border-bottom-right-radius: 0.5rem; }
     
+    /* 🌟 单元格交互样式：防键盘误触体系 */
     table { border-collapse: separate !important; border-spacing: 0; }
     .cell-selected {
         background-color: #e0e7ff !important;
@@ -64,6 +66,7 @@
 
   <div class="max-w-[1600px] mx-auto space-y-4 sm:space-y-6">
     
+    <!-- 顶部极简标题栏 -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/80 backdrop-blur-xl p-4 sm:p-5 md:px-8 md:py-6 rounded-2xl md:rounded-3xl shadow-sm border border-slate-200/60 relative transition-all">
       <div>
         <h1 class="text-xl sm:text-2xl font-extrabold flex items-center gap-2 sm:gap-3 tracking-tight flex-wrap">
@@ -71,10 +74,10 @@
             <i class="fa-solid fa-microscope text-[14px]"></i>
           </span>
           <span id="header-title" class="bg-clip-text text-transparent bg-gradient-to-r from-slate-800 to-slate-600">光合仪</span> 
-          <span class="text-slate-800">提取中心</span>
-          <span class="text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold border border-blue-100 whitespace-nowrap">多核高并发版</span>
+          <span class="text-slate-800">数据提取</span>
+          <span class="text-[10px] sm:text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold border border-blue-100 whitespace-nowrap">并发强序版</span>
         </h1>
-        <p class="text-[11px] sm:text-sm text-slate-500 mt-1.5 font-medium sm:ml-1 leading-relaxed">搭载动态 API 轮询池。填入多个 Key 自动开启多线程并发，突破限流极致提速。</p>
+        <p class="text-[11px] sm:text-sm text-slate-500 mt-1.5 font-medium sm:ml-1 leading-relaxed">已解决并发乱序问题，不论解析快慢，表格数据永远严格遵守初始图片队列顺序对齐。</p>
       </div>
       <div class="flex items-center gap-3 shrink-0 w-full sm:w-auto">
         <button id="clearAllBtn" class="w-full sm:w-auto px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
@@ -112,7 +115,6 @@
           <input type="text" id="apiModel" class="w-full text-xs sm:text-sm bg-slate-50 px-3 py-2 border border-slate-200 rounded-xl outline-none transition-all font-bold text-slate-700 font-mono" readonly value="glm-4v-flash">
         </div>
         <div class="sm:col-span-2">
-          <!-- 🌟 并发数量实时展示栏 -->
           <div class="flex items-center justify-between mb-1.5 flex-wrap gap-1">
             <label class="text-[10px] font-semibold text-indigo-600 uppercase tracking-wider">
               API 密钥轮询池 <span class="font-normal text-slate-400">(多个Key用逗号 , 隔开)</span>
@@ -170,7 +172,7 @@
           
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4 shrink-0">
             <div>
-              <h2 class="font-extrabold text-slate-800 text-sm sm:text-lg tracking-tight">可视化数据表格</h2>
+              <h2 class="font-extrabold text-slate-800 text-sm sm:text-lg tracking-tight">可视化数据表格预览</h2>
               <p class="text-[9px] sm:text-[11px] text-slate-500 mt-1 font-medium leading-tight">全局防误触：<span class="text-indigo-500 font-bold">单击</span>选中单元格，<span class="text-indigo-500 font-bold">双击</span>触发修改。</p>
             </div>
             
@@ -212,7 +214,7 @@
            .replace(/'/g, "&#039;");
     }
 
-    const DB_NAME = 'ImageCacheDB_Zhipu_MultiThread_V2';
+    const DB_NAME = 'ImageCacheDB_Ordered_Final';
     const DB_VERSION = 1;
     let db;
 
@@ -286,15 +288,6 @@
       });
     }
 
-    async function clearImageCache() {
-      if (!db) return;
-      return new Promise((resolve) => {
-        const tx = db.transaction('images', 'readwrite');
-        const store = tx.objectStore('images');
-        store.clear().onsuccess = resolve;
-      });
-    }
-
     let filesState = []; 
     let allColumns = ["样本名称"];
     let isProcessing = false;
@@ -365,10 +358,9 @@
       loadTableData(); 
     };
 
-    function getStorageKey() { return `extracted_data_state_${currentMode}_Zhipu_MultiThread`; }
-    function getHeadersKey() { return `user_target_headers_${currentMode}_Zhipu_MultiThread`; }
+    function getStorageKey() { return `extracted_data_state_${currentMode}_Ordered`; }
+    function getHeadersKey() { return `user_target_headers_${currentMode}_Ordered`; }
 
-    // 🌟 实时计算并更新当前并发状态徽章
     function updateConcurrencyBadge() {
       const badge = document.getElementById('concurrencyBadge');
       if (!badge) return;
@@ -589,7 +581,6 @@
       return key;
     }
 
-    // 🌟 动态多核并发轮询引擎
     let keyIndex = 0;
     
     async function processQueue() {
@@ -996,7 +987,7 @@ ${specialNote}
       } else if (item.status === 'error') {
         statusBox.innerHTML = `<button onclick="retryItem('${item.id}')" class="text-indigo-600 hover:text-white hover:bg-indigo-500 border border-indigo-200 px-1.5 py-0.5 sm:py-1 rounded transition-all shadow-sm text-[9px] sm:text-[10px]">重试</button>
                                <div class="relative group/tooltip">
-                                 <span class="text-[9px] sm:text-xs text-rose-600 flex items-center gap-1 cursor-help bg-rose-50 px-1.5 py-1 rounded-md"><i class="fa-solid fa-triangle-exclamation"></i> 失败</span>
+                                 <span class="text-[9px] sm:text-xs text-rose-600 flex items-center gap-1 cursor-help bg-rose-50 px-1.5 py-0.5 sm:py-1 rounded-md"><i class="fa-solid fa-triangle-exclamation"></i> 失败</span>
                                  <div class="absolute right-0 bottom-full mb-2 hidden group-hover/tooltip:block w-48 sm:w-56 p-2 sm:p-2.5 bg-slate-800 text-white text-[10px] sm:text-[11px] leading-relaxed rounded-lg shadow-xl z-50 break-words font-normal">${escapeHtml(item.errorMsg)}</div>
                                </div>
                                ${deleteBtn}`;
@@ -1035,6 +1026,7 @@ ${specialNote}
       }
     };
 
+    // 🌟 核心：强排渲染引擎，确保右侧表格顺序永远严格等于最初始的排队顺序！
     function renderTable() {
       const successfulItems = filesState.filter(f => f.status === 'success' && f.data);
       if (successfulItems.length === 0) {
@@ -1079,7 +1071,6 @@ ${specialNote}
               if (!tr) {
                   tr = document.createElement('tr');
                   tr.id = `row_${item.id}`;
-                  tableBody.appendChild(tr);
               }
               tr.dataset.sticky = String(isStickyEnabled);
               tr.className = `transition-colors fade-in-row group/tr ${rowBg}`;
@@ -1094,7 +1085,7 @@ ${specialNote}
                     colHtml += `<td class="relative ${tdLeftClass} px-1 sm:px-2 py-1 font-sans border-b border-slate-100 border-r border-slate-200/80 whitespace-nowrap transition-all duration-300"><input type="text" data-index="${index}" data-col="样本名称" value="${escapeHtml(item.customName)}" title="${escapeHtml(item.customName)}" class="cell-input bg-transparent px-1 sm:px-2 py-1.5 sm:py-2 border border-transparent rounded-md sm:rounded-lg outline-none transition-all w-full text-center text-[11px] sm:text-xs min-w-[75px] font-bold text-slate-800" readonly onclick="handleCellInteract(this, event)" onblur="handleCellBlur(this, '${item.id}', '样本名称')" onkeydown="handleCellKey(event, this)"></td>`;
                 } else {
                     const val = item.data[col] !== undefined ? item.data[col] : '';
-                    colHtml += `<td class="px-1 sm:px-2 py-1 border-b border-slate-100 border-r border-slate-100/50 whitespace-nowrap ${cellBg} transition-colors text-center"><input type="text" data-index="${index}" value="${escapeHtml(val)}" class="cell-input bg-transparent px-1 sm:px-2 py-1.5 sm:py-2 border border-transparent rounded-md sm:rounded-lg outline-none transition-all w-full placeholder:text-slate-200 text-center text-[11px] sm:text-xs min-w-[60px] text-slate-600" placeholder="-" readonly onclick="handleCellInteract(this, event)" onblur="handleCellBlur(this, '${item.id}', '${escapeHtml(col).replace(/'/g, "\\'")}')" onkeydown="handleCellKey(event, this)"></td>`;
+                    colHtml += `<td class="${cellBg} px-1 sm:px-2 py-1 border-b border-slate-100 border-r border-slate-100/50 whitespace-nowrap transition-colors text-center"><input type="text" data-index="${index}" value="${escapeHtml(val)}" class="cell-input bg-transparent px-1 sm:px-2 py-1.5 sm:py-2 border border-transparent rounded-md sm:rounded-lg outline-none transition-all w-full placeholder:text-slate-200 text-center text-[11px] sm:text-xs min-w-[60px] text-slate-600" placeholder="-" readonly onclick="handleCellInteract(this, event)" onblur="handleCellBlur(this, '${item.id}', '${escapeHtml(col).replace(/'/g, "\\'")}')" onkeydown="handleCellKey(event, this)"></td>`;
                 }
               });
               const tdRightClass = isStickyEnabled ? `sticky right-0 z-[35] shadow-[-4px_0_8px_-2px_rgba(0,0,0,0.02)] ${stickyBgLeft} backdrop-blur-sm` : '';
@@ -1112,6 +1103,11 @@ ${specialNote}
                       }
                   }
               });
+          }
+
+          // 🌟 【关键修复】：无论数据生成的快慢，利用 insertBefore 强制将 DOM 节点恢复到上传时的原始顺序
+          if (tableBody.children[index] !== tr) {
+              tableBody.insertBefore(tr, tableBody.children[index]);
           }
       });
     }
@@ -1136,7 +1132,7 @@ ${specialNote}
       XLSX.utils.book_append_sheet(wb, ws, "数据记录");
       
       const prefix = currentMode === 'PAM' ? '光合仪' : '氮平衡仪';
-      XLSX.writeFile(wb, `${prefix}数据_${new Date().toISOString().slice(0,10)}.xlsx`);
+      XLSX.writeFile(wb, `${prefix}提取结果_${new Date().toISOString().slice(0,10)}.xlsx`);
     });
 
     clearAllBtn.addEventListener('click', async () => {
